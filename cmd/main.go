@@ -1,20 +1,13 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"github.com/adshao/go-binance/v2"
-	"log"
+	"github.com/maxzhovtyj/coin-tracker/internal/app"
+	"github.com/maxzhovtyj/coin-tracker/pkg/logger"
 )
 
 func main() {
-	cl := binance.NewClient("", "")
-	do, err := cl.NewListPricesService().Do(context.Background())
+	err := app.Run()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, sp := range do {
-		fmt.Println(sp.Symbol, sp.Price)
+		logger.Fatalf("can't run application: %v", err)
 	}
 }
