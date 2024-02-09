@@ -1,9 +1,8 @@
-package logger
+package applogger
 
 import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 	"sync"
 )
 
@@ -12,16 +11,18 @@ var (
 	once   sync.Once
 )
 
-func init() {
+func New() *zap.SugaredLogger {
 	once.Do(func() {
 		logger = createLogger()
 	})
+
+	return logger
 }
 
 func createLogger() *zap.SugaredLogger {
 	encoderCfg := zap.NewProductionEncoderConfig()
 	encoderCfg.TimeKey = "timestamp"
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
 
 	config := zap.Config{
 		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
@@ -32,19 +33,16 @@ func createLogger() *zap.SugaredLogger {
 		Encoding:          "console",
 		EncoderConfig:     encoderCfg,
 		OutputPaths: []string{
-			"stdout",
+			"stderr", "./logs/coin-tracker-error.log",
 		},
 		ErrorOutputPaths: []string{
-			"stderr",
-		},
-		InitialFields: map[string]interface{}{
-			"pid": os.Getpid(),
+			"stderr", "./logs/coin-tracker-error.log",
 		},
 	}
 
-	return zap.Must(config.Build()).Sugar()
-}
+	lg := zap.Must(config.Build())
 
-func Fatalf(template string, args ...interface{}) {
-	logger.Fatalf(template, args...)
+	zap.ReplaceGlobals(lg)
+
+	return lg.Sugar()
 }

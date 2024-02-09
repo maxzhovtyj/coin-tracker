@@ -1,3 +1,6 @@
 .DS_Store
 .idea
 /db/coin-tracker.db
+/logs/
+/configs/
+/bin/
