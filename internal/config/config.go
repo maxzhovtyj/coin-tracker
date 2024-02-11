@@ -20,23 +20,31 @@ var (
 )
 
 func New() (*Config, error) {
-	flag.Parse()
+	var err error
 
-	if *configPath == "" {
-		return nil, fmt.Errorf("empty config path")
-	}
-
-	rawConfig, err := os.ReadFile(*configPath)
-	if err != nil {
-		return nil, fmt.Errorf("can't read config file: %w", err)
-	}
-
-	var parseErr error
 	once.Do(func() {
-		parseErr = yaml.Unmarshal(rawConfig, &cfg)
+		flag.Parse()
+
+		if *configPath == "" {
+			err = fmt.Errorf("empty config path")
+			return
+		}
+
+		var rawConfig []byte
+		rawConfig, err = os.ReadFile(*configPath)
+		if err != nil {
+			err = fmt.Errorf("can't read config file: %w", err)
+			return
+		}
+
+		err = yaml.Unmarshal(rawConfig, &cfg)
+		if err != nil {
+			err = fmt.Errorf("failed to unmarshal config file: %w", err)
+			return
+		}
 	})
-	if parseErr != nil {
-		return nil, fmt.Errorf("failed to unmarshal config file: %w", parseErr)
+	if err != nil {
+		return nil, err
 	}
 
 	return cfg, nil
