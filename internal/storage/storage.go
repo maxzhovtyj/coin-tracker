@@ -15,6 +15,7 @@ type User interface {
 }
 
 type Wallet interface {
+	Create(telegramID int64, wallet string) error
 }
 
 func New(conn db.DBTX) *Storage {

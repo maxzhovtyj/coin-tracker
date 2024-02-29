@@ -11,6 +11,7 @@ CREATE TABLE crypto_wallets
     "user_id"    INTEGER      NOT NULL,
     "name"       VARCHAR(128) NOT NULL,
     "created_at" TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, name),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 

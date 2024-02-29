@@ -8,6 +8,7 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/delivery/telegram"
 	"github.com/maxzhovtyj/coin-tracker/internal/service"
 	"github.com/maxzhovtyj/coin-tracker/internal/storage"
+	"github.com/maxzhovtyj/coin-tracker/pkg/binance"
 	"github.com/maxzhovtyj/coin-tracker/pkg/log/applogger"
 )
 
@@ -29,9 +30,11 @@ func Run() error {
 	}
 	defer db.Close()
 
-	st := storage.New(db)
-	s := service.New(st)
-	handler := telegram.NewHandler(cfg, s, logger)
+	appStorage := storage.New(db)
+
+	api := binance.NewAPI()
+	appService := service.New(appStorage, api)
+	handler := telegram.NewHandler(cfg, appService, logger)
 	err = handler.Init()
 	if err != nil {
 		return fmt.Errorf("failed to init telegram handler: %w", err)

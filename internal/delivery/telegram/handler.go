@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	startMessage = "start"
-	getWallets   = "wallets"
+	startMessage     = "start"
+	newWalletMessage = "newWallet"
 )
 
 type Handler struct {
@@ -53,7 +53,8 @@ func (h *Handler) Init() error {
 		switch update.Message.Command() {
 		case startMessage:
 			msg = h.CreateUser(&update)
-		case getWallets:
+		case newWalletMessage:
+			msg = h.NewWallet(&update)
 		default:
 		}
 
