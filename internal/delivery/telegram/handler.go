@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/maxzhovtyj/coin-tracker/internal/config"
 	"github.com/maxzhovtyj/coin-tracker/internal/service"
@@ -17,28 +16,25 @@ type Handler struct {
 	cfg     *config.Config
 	service *service.Service
 	logger  *zap.SugaredLogger
+	bot     *tgbotapi.BotAPI
 }
 
-func NewHandler(cfg *config.Config, service *service.Service, logger *zap.SugaredLogger) *Handler {
+func NewHandler(cfg *config.Config, bot *tgbotapi.BotAPI, service *service.Service, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		cfg:     cfg,
 		service: service,
 		logger:  logger,
+		bot:     bot,
 	}
 }
 
 func (h *Handler) Init() error {
-	bot, err := tgbotapi.NewBotAPI(h.cfg.TelegramApiToken)
-	if err != nil {
-		return fmt.Errorf("failed to get telegram api token: %w", err)
-	}
-
-	h.logger.Infof("authorized on account %s", bot.Self.UserName)
+	h.logger.Infof("authorized on account %s", h.bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates := bot.GetUpdatesChan(u)
+	updates := h.bot.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message == nil {
 			continue
@@ -48,18 +44,13 @@ func (h *Handler) Init() error {
 			continue
 		}
 
-		var msg tgbotapi.MessageConfig
-
 		switch update.Message.Command() {
 		case startMessage:
-			msg = h.CreateUser(&update)
+			h.CreateUser(&update)
 		case newWalletMessage:
-			msg = h.NewWallet(&update)
+			h.NewWallet(&update)
 		default:
-		}
-
-		if _, err = bot.Send(msg); err != nil {
-			h.logger.Errorf("failed to sent response message: %w", err)
+			h.Response(update.SentFrom().ID, h.UnknownCommand())
 		}
 	}
 

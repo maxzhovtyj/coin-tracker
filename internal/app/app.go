@@ -3,6 +3,7 @@ package app
 import (
 	"database/sql"
 	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/mattn/go-sqlite3"
 	"github.com/maxzhovtyj/coin-tracker/internal/config"
 	"github.com/maxzhovtyj/coin-tracker/internal/delivery/telegram"
@@ -34,7 +35,13 @@ func Run() error {
 
 	api := binance.NewAPI()
 	appService := service.New(appStorage, api)
-	handler := telegram.NewHandler(cfg, appService, logger)
+
+	bot, err := tgbotapi.NewBotAPI(cfg.TelegramApiToken)
+	if err != nil {
+		return fmt.Errorf("failed to get telegram api token: %w", err)
+	}
+
+	handler := telegram.NewHandler(cfg, bot, appService, logger)
 	err = handler.Init()
 	if err != nil {
 		return fmt.Errorf("failed to init telegram handler: %w", err)
