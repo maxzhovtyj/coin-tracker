@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	TelegramApiToken string `yaml:"telegramApiToken"`
+	DBPath           string `yaml:"dbPath"`
 }
 
 var (

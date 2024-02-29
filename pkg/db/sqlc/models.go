@@ -5,7 +5,6 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -13,7 +12,7 @@ type CryptoWallets struct {
 	ID        int64
 	UserID    int64
 	Name      string
-	CreatedAt sql.NullTime
+	CreatedAt time.Time
 }
 
 type Transactions struct {
@@ -25,5 +24,6 @@ type Transactions struct {
 
 type Users struct {
 	ID         int64
-	TelegramID string
+	TelegramID int64
+	CreatedAt  time.Time
 }

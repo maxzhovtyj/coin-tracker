@@ -4,6 +4,7 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/maxzhovtyj/coin-tracker/internal/config"
+	"github.com/maxzhovtyj/coin-tracker/internal/service"
 	"go.uber.org/zap"
 )
 
@@ -13,14 +14,16 @@ const (
 )
 
 type Handler struct {
-	cfg    *config.Config
-	logger *zap.SugaredLogger
+	cfg     *config.Config
+	service *service.Service
+	logger  *zap.SugaredLogger
 }
 
-func NewHandler(cfg *config.Config, logger *zap.SugaredLogger) *Handler {
+func NewHandler(cfg *config.Config, service *service.Service, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
-		cfg:    cfg,
-		logger: logger,
+		cfg:     cfg,
+		service: service,
+		logger:  logger,
 	}
 }
 
@@ -41,21 +44,17 @@ func (h *Handler) Init() error {
 			continue
 		}
 
-		user := update.SentFrom()
-
 		if !update.Message.IsCommand() {
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		var msg tgbotapi.MessageConfig
 
 		switch update.Message.Command() {
 		case startMessage:
-			msg.Text = fmt.Sprintf("Hello, %s, thank you for using me", user.FirstName)
+			msg = h.CreateUser(&update)
 		case getWallets:
-			msg.Text = "Your wallets:"
 		default:
-			msg.Text = "I don't know that command"
 		}
 
 		if _, err = bot.Send(msg); err != nil {

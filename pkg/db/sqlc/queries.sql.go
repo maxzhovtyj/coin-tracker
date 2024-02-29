@@ -12,13 +12,13 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO "users" (telegram_id)
 VALUES (?)
-RETURNING id, telegram_id
+RETURNING id, telegram_id, created_at
 `
 
-func (q *Queries) CreateUser(ctx context.Context, telegramID string) (Users, error) {
+func (q *Queries) CreateUser(ctx context.Context, telegramID int64) (Users, error) {
 	row := q.db.QueryRowContext(ctx, createUser, telegramID)
 	var i Users
-	err := row.Scan(&i.ID, &i.TelegramID)
+	err := row.Scan(&i.ID, &i.TelegramID, &i.CreatedAt)
 	return i, err
 }
 
@@ -46,7 +46,7 @@ func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletPara
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, telegram_id
+SELECT id, telegram_id, created_at
 FROM "users"
 WHERE id = ?
 LIMIT 1
@@ -55,7 +55,7 @@ LIMIT 1
 func (q *Queries) GetUser(ctx context.Context, id int64) (Users, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i Users
-	err := row.Scan(&i.ID, &i.TelegramID)
+	err := row.Scan(&i.ID, &i.TelegramID, &i.CreatedAt)
 	return i, err
 }
 
