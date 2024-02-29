@@ -11,7 +11,7 @@ type Storage struct {
 }
 
 type User interface {
-	Create(telegramID int64) (db.Users, error)
+	Create(telegramID int64) (db.User, error)
 }
 
 type Wallet interface {

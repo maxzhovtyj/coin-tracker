@@ -2,6 +2,12 @@ COIN_TRACKER_USER=root
 COIN_TRACKER_HOST=194.164.59.123
 COIN_TRACKER_PATH=/var/www/coin-tracker
 
+linter:
+	golangci-lint run ./...
+
+sqlc:
+	sqlc generate
+
 coin-tracker-linux:
 	CC=x86_64-linux-musl-gcc CXX=x86_64-linux-musl-g++ GOARCH=amd64 GOOS=linux CGO_ENABLED=1 go build -ldflags "-linkmode external -extldflags -static" -o bin/coin-tracker-linux-amd64 ./cmd/
 

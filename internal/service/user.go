@@ -21,14 +21,14 @@ func NewUserService(db storage.User) *UserService {
 	}
 }
 
-func (u *UserService) Create(telegramID int64) (db.Users, error) {
+func (u *UserService) Create(telegramID int64) (db.User, error) {
 	user, err := u.db.Create(telegramID)
 	if err != nil {
 		if errors.Is(err, models.ErrConstraintUnique) {
-			return db.Users{}, ErrUserAlreadyExists
+			return db.User{}, ErrUserAlreadyExists
 		}
 
-		return db.Users{}, err
+		return db.User{}, err
 	}
 
 	return user, nil

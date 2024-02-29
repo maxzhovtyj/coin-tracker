@@ -10,20 +10,20 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO "users" (telegram_id)
+INSERT INTO users (telegram_id)
 VALUES (?)
 RETURNING id, telegram_id, created_at
 `
 
-func (q *Queries) CreateUser(ctx context.Context, telegramID int64) (Users, error) {
+func (q *Queries) CreateUser(ctx context.Context, telegramID int64) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser, telegramID)
-	var i Users
+	var i User
 	err := row.Scan(&i.ID, &i.TelegramID, &i.CreatedAt)
 	return i, err
 }
 
 const createUserWallet = `-- name: CreateUserWallet :one
-INSERT INTO "crypto_wallets" (user_id, name)
+INSERT INTO crypto_wallets (user_id, name)
 VALUES (?, ?)
 RETURNING id, user_id, name, created_at
 `
@@ -33,9 +33,9 @@ type CreateUserWalletParams struct {
 	Name   string
 }
 
-func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletParams) (CryptoWallets, error) {
+func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletParams) (CryptoWallet, error) {
 	row := q.db.QueryRowContext(ctx, createUserWallet, arg.UserID, arg.Name)
-	var i CryptoWallets
+	var i CryptoWallet
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -47,34 +47,34 @@ func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletPara
 
 const getUser = `-- name: GetUser :one
 SELECT id, telegram_id, created_at
-FROM "users"
+FROM users
 WHERE id = ?
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int64) (Users, error) {
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
-	var i Users
+	var i User
 	err := row.Scan(&i.ID, &i.TelegramID, &i.CreatedAt)
 	return i, err
 }
 
 const getUserWallets = `-- name: GetUserWallets :many
 SELECT id, user_id, name, created_at
-FROM "crypto_wallets"
+FROM crypto_wallets
 WHERE user_id = ?
 ORDER BY created_at DESC
 `
 
-func (q *Queries) GetUserWallets(ctx context.Context, userID int64) ([]CryptoWallets, error) {
+func (q *Queries) GetUserWallets(ctx context.Context, userID int64) ([]CryptoWallet, error) {
 	rows, err := q.db.QueryContext(ctx, getUserWallets, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []CryptoWallets
+	var items []CryptoWallet
 	for rows.Next() {
-		var i CryptoWallets
+		var i CryptoWallet
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,

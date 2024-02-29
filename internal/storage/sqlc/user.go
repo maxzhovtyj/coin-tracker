@@ -19,17 +19,17 @@ func NewUserStorage(conn db.DBTX) *UserStorage {
 	}
 }
 
-func (u *UserStorage) Create(telegramID int64) (db.Users, error) {
+func (u *UserStorage) Create(telegramID int64) (db.User, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
 	user, err := u.q.CreateUser(ctx, telegramID)
 	if err != nil {
 		if dbErr, ok := err.(sqlite3.Error); ok && errors.Is(dbErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-			return db.Users{}, models.ErrConstraintUnique
+			return db.User{}, models.ErrConstraintUnique
 		}
 
-		return db.Users{}, err
+		return db.User{}, err
 	}
 
 	return user, nil

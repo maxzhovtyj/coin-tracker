@@ -6,6 +6,11 @@ type WalletService struct {
 	db storage.Wallet
 }
 
+func (w *WalletService) Create(telegramID int64, wallet string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewWalletService(db storage.Wallet) *WalletService {
 	return &WalletService{
 		db: db,

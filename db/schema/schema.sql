@@ -1,11 +1,11 @@
-CREATE TABLE "users"
+CREATE TABLE users
 (
     "id"          INTEGER PRIMARY KEY AUTOINCREMENT,
     "telegram_id" INTEGER   NOT NULL UNIQUE,
     "created_at"  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE "crypto_wallets"
+CREATE TABLE crypto_wallets
 (
     "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
     "user_id"    INTEGER      NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE "crypto_wallets"
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE "transactions"
+CREATE TABLE transactions
 (
     "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
     "wallet_id"  INTEGER   NOT NULL,
