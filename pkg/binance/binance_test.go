@@ -8,14 +8,10 @@ import (
 )
 
 func Test(t *testing.T) {
-	//do, err := binance.NewClient("", "").NewListPricesService().Symbol("BTCUSDT").Do(context.Background(), []binance.RequestOption{}...)
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	tickers, err := binance.NewClient("", "").NewListSymbolTickerService().WindowSize("20").Do(context.Background(), []binance.RequestOption{}...)
+	do, err := binance.NewClient("", "").NewListPricesService().Symbol("BTCUSDT").Do(context.Background(), []binance.RequestOption{}...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	fmt.Println(tickers)
+	fmt.Println(do[0].Price)
 }

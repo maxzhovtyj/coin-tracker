@@ -25,7 +25,7 @@ func (q *Queries) CreateUser(ctx context.Context, telegramID int64) (User, error
 const createUserWallet = `-- name: CreateUserWallet :one
 INSERT INTO crypto_wallets (user_id, name)
 VALUES (?, ?)
-RETURNING id, user_id, name, created_at
+RETURNING id, user_id, name, amount, created_at
 `
 
 type CreateUserWalletParams struct {
@@ -40,6 +40,7 @@ func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletPara
 		&i.ID,
 		&i.UserID,
 		&i.Name,
+		&i.Amount,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -59,8 +60,33 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
+const getUserWallet = `-- name: GetUserWallet :one
+SELECT id, user_id, name, amount, created_at
+FROM crypto_wallets
+WHERE user_id = ? AND name = ?
+ORDER BY created_at DESC
+`
+
+type GetUserWalletParams struct {
+	UserID int64
+	Name   string
+}
+
+func (q *Queries) GetUserWallet(ctx context.Context, arg GetUserWalletParams) (CryptoWallet, error) {
+	row := q.db.QueryRowContext(ctx, getUserWallet, arg.UserID, arg.Name)
+	var i CryptoWallet
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUserWallets = `-- name: GetUserWallets :many
-SELECT id, user_id, name, created_at
+SELECT id, user_id, name, amount, created_at
 FROM crypto_wallets
 WHERE user_id = ?
 ORDER BY created_at DESC
@@ -79,6 +105,7 @@ func (q *Queries) GetUserWallets(ctx context.Context, userID int64) ([]CryptoWal
 			&i.ID,
 			&i.UserID,
 			&i.Name,
+			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

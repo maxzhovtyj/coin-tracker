@@ -1,19 +1,24 @@
 package service
 
 import (
-	"errors"
 	"fmt"
+	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	"github.com/maxzhovtyj/coin-tracker/internal/storage"
-	"github.com/maxzhovtyj/coin-tracker/internal/storage/models"
 	"github.com/maxzhovtyj/coin-tracker/pkg/binance"
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
+	"strconv"
 )
-
-var ErrWalletAlreadyExists = errors.New("wallet already exists")
 
 type WalletService struct {
 	db  storage.Wallet
 	api binance.API
+}
+
+func NewWalletService(db storage.Wallet, api binance.API) *WalletService {
+	return &WalletService{
+		db:  db,
+		api: api,
+	}
 }
 
 func (w *WalletService) All(telegramID int64) ([]db.CryptoWallet, error) {
@@ -30,21 +35,31 @@ func (w *WalletService) Create(telegramID int64, walletName string) error {
 		return fmt.Errorf("unknown coin")
 	}
 
-	err = w.db.Create(telegramID, walletName)
-	if err != nil {
-		if errors.Is(err, models.ErrConstraintUnique) {
-			return ErrWalletAlreadyExists
-		}
-
-		return err
-	}
-
-	return nil
+	return w.db.Create(telegramID, walletName)
 }
 
-func NewWalletService(db storage.Wallet, api binance.API) *WalletService {
-	return &WalletService{
-		db:  db,
-		api: api,
+func (w *WalletService) Get(telegramID int64, name string) (models.Wallet, error) {
+	storageWallet, err := w.db.Get(telegramID, name)
+	if err != nil {
+		return models.Wallet{}, err
 	}
+
+	coinInfo, err := w.api.Info(storageWallet.Name)
+	if err != nil {
+		return models.Wallet{}, err
+	}
+
+	price, err := strconv.ParseFloat(coinInfo.Price, 64)
+	if err != nil {
+		return models.Wallet{}, err
+	}
+
+	return models.Wallet{
+		Id:      storageWallet.ID,
+		UserID:  storageWallet.UserID,
+		Name:    storageWallet.Name,
+		Price:   price,
+		Amount:  storageWallet.Amount,
+		Balance: storageWallet.Amount * price,
+	}, nil
 }

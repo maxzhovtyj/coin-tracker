@@ -1,14 +1,8 @@
 package service
 
 import (
-	"errors"
 	"github.com/maxzhovtyj/coin-tracker/internal/storage"
-	"github.com/maxzhovtyj/coin-tracker/internal/storage/models"
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
-)
-
-var (
-	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
 type UserService struct {
@@ -22,14 +16,5 @@ func NewUserService(db storage.User) *UserService {
 }
 
 func (u *UserService) Create(telegramID int64) (db.User, error) {
-	user, err := u.db.Create(telegramID)
-	if err != nil {
-		if errors.Is(err, models.ErrConstraintUnique) {
-			return db.User{}, ErrUserAlreadyExists
-		}
-
-		return db.User{}, err
-	}
-
-	return user, nil
+	return u.db.Create(telegramID)
 }

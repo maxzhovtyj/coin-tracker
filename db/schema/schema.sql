@@ -10,6 +10,7 @@ CREATE TABLE crypto_wallets
     "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
     "user_id"    INTEGER      NOT NULL,
     "name"       VARCHAR(128) NOT NULL,
+    "amount"     DOUBLE       NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, name),
     FOREIGN KEY (user_id) REFERENCES users (id)

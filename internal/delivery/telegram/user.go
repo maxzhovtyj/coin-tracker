@@ -10,17 +10,17 @@ func (h *Handler) CreateUser(update *tgbotapi.Update) {
 
 	_, err := h.service.User.Create(uid)
 	if err != nil {
-		h.ResponseString(uid, h.StartError(err))
+		h.ResponseString(uid, h.startError(err))
 		return
 	}
 
-	h.ResponseString(uid, h.StartSuccess())
+	h.ResponseString(uid, h.startSuccess())
 }
 
-func (h *Handler) StartError(err error) string {
-	return fmt.Sprintf("Sorry, I can't create new user, reason: %v", err.Error())
+func (h *Handler) startError(err error) string {
+	return fmt.Sprintf("Sorry, I can't create new user, reason: %v", err)
 }
 
-func (h *Handler) StartSuccess() string {
+func (h *Handler) startSuccess() string {
 	return "Congratulations! New user successfully created"
 }

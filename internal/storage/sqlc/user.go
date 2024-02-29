@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/mattn/go-sqlite3"
-	"github.com/maxzhovtyj/coin-tracker/internal/storage/models"
+	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
 	"time"
 )
@@ -26,7 +26,7 @@ func (u *UserStorage) Create(telegramID int64) (db.User, error) {
 	user, err := u.q.CreateUser(ctx, telegramID)
 	if err != nil {
 		if dbErr, ok := err.(sqlite3.Error); ok && errors.Is(dbErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
-			return db.User{}, models.ErrConstraintUnique
+			return db.User{}, models.ErrUserAlreadyExists
 		}
 
 		return db.User{}, err

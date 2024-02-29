@@ -12,6 +12,7 @@ type CryptoWallet struct {
 	ID        int64
 	UserID    int64
 	Name      string
+	Amount    float64
 	CreatedAt time.Time
 }
 

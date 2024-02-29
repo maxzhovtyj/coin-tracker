@@ -15,6 +15,12 @@ FROM crypto_wallets
 WHERE user_id = ?
 ORDER BY created_at DESC;
 
+-- name: GetUserWallet :one
+SELECT *
+FROM crypto_wallets
+WHERE user_id = ? AND name = ?
+ORDER BY created_at DESC;
+
 -- name: CreateUserWallet :one
 INSERT INTO crypto_wallets (user_id, name)
 VALUES (?, ?)

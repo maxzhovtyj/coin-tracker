@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	startMessage      = "start"
-	allWalletsMessage = "allWallets"
-	newWalletMessage  = "newWallet"
-	newRecordMessage  = "newRecord"
+	startMessage           = "start"
+	walletsMessage         = "wallets"
+	walletMessage          = "wallet"
+	newWalletMessage       = "newWallet"
+	newWalletRecordMessage = "newWalletRecord"
 )
 
 type Handler struct {
@@ -49,12 +50,13 @@ func (h *Handler) Init() error {
 		switch update.Message.Command() {
 		case startMessage:
 			h.CreateUser(&update)
-		case allWalletsMessage:
+		case walletsMessage:
 			h.Wallets(&update)
 		case newWalletMessage:
 			h.NewWallet(&update)
-		case newRecordMessage:
-			h.NewWalletRecord(&update)
+		case walletMessage:
+			h.Wallet(&update)
+		case newWalletRecordMessage:
 		default:
 			h.ResponseString(update.SentFrom().ID, h.UnknownCommand())
 		}
