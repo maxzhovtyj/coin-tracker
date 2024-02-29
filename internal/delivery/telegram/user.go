@@ -10,11 +10,11 @@ func (h *Handler) CreateUser(update *tgbotapi.Update) {
 
 	_, err := h.service.User.Create(uid)
 	if err != nil {
-		h.Response(uid, h.StartError(err))
+		h.ResponseString(uid, h.StartError(err))
 		return
 	}
 
-	h.Response(uid, h.StartSuccess())
+	h.ResponseString(uid, h.StartSuccess())
 }
 
 func (h *Handler) StartError(err error) string {

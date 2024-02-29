@@ -4,8 +4,16 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-func (h *Handler) Response(chatID int64, msg string) {
+func (h *Handler) ResponseString(chatID int64, msg string) {
 	_, err := h.bot.Send(tgbotapi.NewMessage(chatID, msg))
+	if err != nil {
+		h.logger.Errorf("failed to send message: %v", err)
+		return
+	}
+}
+
+func (h *Handler) Response(msg tgbotapi.MessageConfig) {
+	_, err := h.bot.Send(msg)
 	if err != nil {
 		h.logger.Errorf("failed to send message: %v", err)
 		return

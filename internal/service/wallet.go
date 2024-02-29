@@ -6,6 +6,7 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/storage"
 	"github.com/maxzhovtyj/coin-tracker/internal/storage/models"
 	"github.com/maxzhovtyj/coin-tracker/pkg/binance"
+	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
 )
 
 var ErrWalletAlreadyExists = errors.New("wallet already exists")
@@ -13,6 +14,10 @@ var ErrWalletAlreadyExists = errors.New("wallet already exists")
 type WalletService struct {
 	db  storage.Wallet
 	api binance.API
+}
+
+func (w *WalletService) All(telegramID int64) ([]db.CryptoWallet, error) {
+	return w.db.All(telegramID)
 }
 
 func (w *WalletService) Create(telegramID int64, walletName string) error {

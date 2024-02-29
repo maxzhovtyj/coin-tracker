@@ -13,7 +13,14 @@ type WalletStorage struct {
 	q *db.Queries
 }
 
-func (w WalletStorage) Create(telegramID int64, wallet string) error {
+func (w *WalletStorage) All(telegramID int64) ([]db.CryptoWallet, error) {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelFunc()
+
+	return w.q.GetUserWallets(ctx, telegramID)
+}
+
+func (w *WalletStorage) Create(telegramID int64, wallet string) error {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
