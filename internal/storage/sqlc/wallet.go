@@ -11,13 +11,62 @@ import (
 )
 
 type WalletStorage struct {
-	q *db.Queries
+	dbRaw *sql.DB
+	q     *db.Queries
 }
 
 func NewWalletStorage(conn db.DBTX) *WalletStorage {
-	return &WalletStorage{
-		q: db.New(conn),
+	dbRaw, ok := conn.(*sql.DB)
+	if !ok {
+		panic("can't get raw db connection")
 	}
+
+	return &WalletStorage{
+		dbRaw: dbRaw,
+		q:     db.New(conn),
+	}
+}
+
+func (w *WalletStorage) CreateTransaction(withTx *db.Queries, walletID int64, amount float64) (db.Transaction, error) {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelFunc()
+
+	tr, err := withTx.CreateTransaction(ctx, db.CreateTransactionParams{
+		WalletID: walletID,
+		Amount:   amount,
+	})
+	if err != nil {
+		return db.Transaction{}, err
+	}
+
+	return tr, nil
+}
+
+func (w *WalletStorage) CreateWalletRecord(walletID int64, amount float64) (db.Transaction, error) {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelFunc()
+
+	tx, err := w.dbRaw.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return db.Transaction{}, err
+	}
+
+	qTx := w.q.WithTx(tx)
+
+	tr, err := w.CreateTransaction(qTx, walletID, amount)
+	if err != nil {
+		return db.Transaction{}, err
+	}
+
+	_, err = qTx.UpdateWalletBalance(ctx, db.UpdateWalletBalanceParams{
+		ID:     walletID,
+		Amount: amount,
+	})
+	if err != nil {
+		return db.Transaction{}, err
+	}
+
+	return tr, nil
 }
 
 func (w *WalletStorage) Get(telegramID int64, wallet string) (db.CryptoWallet, error) {

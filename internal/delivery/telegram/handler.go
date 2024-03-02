@@ -5,14 +5,7 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/config"
 	"github.com/maxzhovtyj/coin-tracker/internal/service"
 	"go.uber.org/zap"
-)
-
-const (
-	startMessage           = "start"
-	walletsMessage         = "wallets"
-	walletMessage          = "wallet"
-	newWalletMessage       = "newWallet"
-	newWalletRecordMessage = "newWalletRecord"
+	"strings"
 )
 
 type Handler struct {
@@ -39,28 +32,23 @@ func (h *Handler) Init() error {
 
 	updates := h.bot.GetUpdatesChan(u)
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
+		ctx := NewContext(update, h.bot, h.logger)
 
-		if !update.Message.IsCommand() {
-			continue
-		}
+		switch ctx.Type {
+		case CallbackMessage:
+			h.Callbacks(ctx)
+		case CommandMessage:
+			h.Commands(ctx)
+		case RegularMessage:
 
-		switch update.Message.Command() {
-		case startMessage:
-			h.CreateUser(&update)
-		case walletsMessage:
-			h.Wallets(&update)
-		case newWalletMessage:
-			h.NewWallet(&update)
-		case walletMessage:
-			h.Wallet(&update)
-		case newWalletRecordMessage:
-		default:
-			h.ResponseString(update.SentFrom().ID, h.UnknownCommand())
 		}
 	}
 
 	return nil
+}
+
+func (h *Handler) resolveWalletName(n string) string {
+	n = strings.TrimSpace(n)
+	n = strings.ToUpper(n)
+	return n
 }

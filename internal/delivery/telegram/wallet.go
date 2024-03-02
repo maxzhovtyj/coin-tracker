@@ -6,24 +6,24 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
 	"math"
-	"strings"
 )
 
-func (h *Handler) NewWallet(update *tgbotapi.Update) {
-	uid := update.SentFrom().ID
-	symbols := strings.Split(update.Message.CommandArguments(), " ")
+func (h *Handler) NewWallet(ctx *Context) {
+	symbols := ctx.CommandArgs()
 	if len(symbols) != 1 {
-		h.ResponseString(uid, h.invalidNewWalletArguments())
+		ctx.ResponseString(h.invalidNewWalletArguments())
 		return
 	}
 
-	err := h.service.Wallet.Create(uid, symbols[0])
+	walletName := h.resolveWalletName(symbols[0])
+
+	err := h.service.Wallet.Create(ctx.UID, walletName)
 	if err != nil {
-		h.ResponseString(uid, h.newWalletError(err))
+		ctx.ResponseString(h.newWalletError(err))
 		return
 	}
 
-	h.ResponseString(uid, h.newWalletSuccess())
+	ctx.ResponseString(h.newWalletSuccess())
 }
 
 func (h *Handler) invalidNewWalletArguments() string {
@@ -38,33 +38,37 @@ func (h *Handler) newWalletSuccess() string {
 	return "Congratulations! New wallet successfully created"
 }
 
-func (h *Handler) Wallets(update *tgbotapi.Update) {
-	uid := update.SentFrom().ID
-
-	all, err := h.service.Wallet.All(uid)
+func (h *Handler) Wallets(ctx *Context) {
+	all, err := h.service.Wallet.All(ctx.UID)
 	if err != nil {
-		h.ResponseString(uid, h.allWalletsError(err))
+		ctx.ResponseString(h.allWalletsError(err))
 		return
 	}
 
-	msg := tgbotapi.NewMessage(uid, "There is the list of your wallets")
-	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(getKeyboardFromWallets(all)...)
-	h.Response(msg)
+	if len(all) == 0 {
+		ctx.ResponseString("Sorry, you don't have any wallets yet, use /newWallet command")
+		return
+	}
+
+	msg := tgbotapi.NewMessage(ctx.UID, "There is the list of your wallets")
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(getKeyboardFromWallets(all)...)
+	ctx.Response(msg)
 }
 
 func (h *Handler) allWalletsError(err error) string {
 	return fmt.Sprintf("Sorry, I retrieve your wallets, reason: %v", err.Error())
 }
 
-func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.KeyboardButton {
+func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.InlineKeyboardButton {
 	rows := math.Ceil(float64(len(wallets)) / float64(2))
-	keyboard := make([][]tgbotapi.KeyboardButton, int(rows))
+	keyboard := make([][]tgbotapi.InlineKeyboardButton, int(rows))
 
 	var row int
 	var col int
 
 	for _, w := range wallets {
-		keyboard[row] = append(keyboard[row], tgbotapi.NewKeyboardButton(fmt.Sprintf("/%s %s", walletMessage, w.Name)))
+		cbData := fmt.Sprintf("%s=%s", walletCallback, w.Name)
+		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(w.Name, cbData))
 
 		if (col+1)%2 == 0 {
 			col = 0
@@ -77,25 +81,16 @@ func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.KeyboardButt
 	return keyboard
 }
 
-func (h *Handler) Wallet(update *tgbotapi.Update) {
-	uid := update.SentFrom().ID
-	symbols := strings.Split(update.Message.CommandArguments(), " ")
-	if len(symbols) != 1 {
-		h.ResponseString(uid, h.walletInvalidArguments())
-		return
-	}
+func (h *Handler) Wallet(ctx *Context) {
+	walletName := h.resolveWalletName(ctx.CallbackDataValue)
 
-	wallet, err := h.service.Wallet.Get(uid, symbols[0])
+	wallet, err := h.service.Wallet.Get(ctx.UID, walletName)
 	if err != nil {
-		h.ResponseString(uid, h.walletError(err))
+		ctx.ResponseString(h.walletError(err))
 		return
 	}
 
-	h.ResponseString(uid, h.walletSuccess(wallet))
-}
-
-func (h *Handler) walletInvalidArguments() string {
-	return "Invalid command argument, expected: /wallet <coin_symbol>"
+	ctx.ResponseString(h.walletSuccess(wallet))
 }
 
 func (h *Handler) walletError(err error) string {

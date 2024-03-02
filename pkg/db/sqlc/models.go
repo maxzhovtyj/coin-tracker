@@ -19,7 +19,7 @@ type CryptoWallet struct {
 type Transaction struct {
 	ID        int64
 	WalletID  int64
-	Amount    int64
+	Amount    float64
 	CreatedAt time.Time
 }
 

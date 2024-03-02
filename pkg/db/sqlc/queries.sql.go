@@ -9,6 +9,27 @@ import (
 	"context"
 )
 
+const createTransaction = `-- name: CreateTransaction :one
+INSERT INTO transactions (wallet_id, amount) VALUES (?, ?) RETURNING id, wallet_id, amount, created_at
+`
+
+type CreateTransactionParams struct {
+	WalletID int64
+	Amount   float64
+}
+
+func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
+	row := q.db.QueryRowContext(ctx, createTransaction, arg.WalletID, arg.Amount)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.WalletID,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (telegram_id)
 VALUES (?)
@@ -119,4 +140,26 @@ func (q *Queries) GetUserWallets(ctx context.Context, userID int64) ([]CryptoWal
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateWalletBalance = `-- name: UpdateWalletBalance :one
+UPDATE crypto_wallets SET amount = amount + ?  WHERE id = ? RETURNING id, user_id, name, amount, created_at
+`
+
+type UpdateWalletBalanceParams struct {
+	Amount float64
+	ID     int64
+}
+
+func (q *Queries) UpdateWalletBalance(ctx context.Context, arg UpdateWalletBalanceParams) (CryptoWallet, error) {
+	row := q.db.QueryRowContext(ctx, updateWalletBalance, arg.Amount, arg.ID)
+	var i CryptoWallet
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Amount,
+		&i.CreatedAt,
+	)
+	return i, err
 }

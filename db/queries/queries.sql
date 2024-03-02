@@ -25,3 +25,9 @@ ORDER BY created_at DESC;
 INSERT INTO crypto_wallets (user_id, name)
 VALUES (?, ?)
 RETURNING *;
+
+-- name: CreateTransaction :one
+INSERT INTO transactions (wallet_id, amount) VALUES (?, ?) RETURNING *;
+
+-- name: UpdateWalletBalance :one
+UPDATE crypto_wallets SET amount = amount + ?  WHERE id = ? RETURNING *;

@@ -20,7 +20,7 @@ CREATE TABLE transactions
 (
     "id"         INTEGER PRIMARY KEY AUTOINCREMENT,
     "wallet_id"  INTEGER   NOT NULL,
-    "amount"     INTEGER   NOT NULL,
+    "amount"     DOUBLE    NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (wallet_id) REFERENCES crypto_wallets (id)
 );
