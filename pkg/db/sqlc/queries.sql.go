@@ -10,21 +10,23 @@ import (
 )
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (wallet_id, amount) VALUES (?, ?) RETURNING id, wallet_id, amount, created_at
+INSERT INTO transactions (wallet_id, amount, price) VALUES (?, ?, ?) RETURNING id, wallet_id, amount, price, created_at
 `
 
 type CreateTransactionParams struct {
 	WalletID int64
 	Amount   float64
+	Price    float64
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
-	row := q.db.QueryRowContext(ctx, createTransaction, arg.WalletID, arg.Amount)
+	row := q.db.QueryRowContext(ctx, createTransaction, arg.WalletID, arg.Amount, arg.Price)
 	var i Transaction
 	err := row.Scan(
 		&i.ID,
 		&i.WalletID,
 		&i.Amount,
+		&i.Price,
 		&i.CreatedAt,
 	)
 	return i, err

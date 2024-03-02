@@ -27,13 +27,14 @@ func NewWalletStorage(conn db.DBTX) *WalletStorage {
 	}
 }
 
-func (w *WalletStorage) CreateTransaction(withTx *db.Queries, walletID int64, amount float64) (db.Transaction, error) {
+func (w *WalletStorage) CreateTransaction(withTx *db.Queries, walletID int64, amount, price float64) (db.Transaction, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
 	tr, err := withTx.CreateTransaction(ctx, db.CreateTransactionParams{
 		WalletID: walletID,
 		Amount:   amount,
+		Price:    price,
 	})
 	if err != nil {
 		return db.Transaction{}, err
@@ -42,18 +43,24 @@ func (w *WalletStorage) CreateTransaction(withTx *db.Queries, walletID int64, am
 	return tr, nil
 }
 
-func (w *WalletStorage) CreateWalletRecord(walletID int64, amount float64) (db.Transaction, error) {
+func (w *WalletStorage) CreateWalletRecord(walletID int64, amount, price float64) (db.Transaction, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
-	tx, err := w.dbRaw.BeginTx(ctx, &sql.TxOptions{})
+	tx, err := w.dbRaw.Begin()
 	if err != nil {
 		return db.Transaction{}, err
 	}
+	defer func() {
+		err = tx.Rollback()
+		if err != nil {
+			return
+		}
+	}()
 
 	qTx := w.q.WithTx(tx)
 
-	tr, err := w.CreateTransaction(qTx, walletID, amount)
+	tr, err := w.CreateTransaction(qTx, walletID, amount, price)
 	if err != nil {
 		return db.Transaction{}, err
 	}
@@ -66,7 +73,7 @@ func (w *WalletStorage) CreateWalletRecord(walletID int64, amount float64) (db.T
 		return db.Transaction{}, err
 	}
 
-	return tr, nil
+	return tr, tx.Commit()
 }
 
 func (w *WalletStorage) Get(telegramID int64, wallet string) (db.CryptoWallet, error) {

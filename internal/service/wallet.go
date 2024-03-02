@@ -14,13 +14,11 @@ type WalletService struct {
 	api binance.API
 }
 
-func (w *WalletService) NewTransaction(telegramID int64, wallet string, amount float64) error {
-	//cryptoWallet, err := w.db.Get(telegramID, wallet)
-	//if err != nil {
-	//	return err
-	//}
-
-	//w.db.CreateWalletRecord(cryptoWallet.ID, amount)
+func (w *WalletService) NewTransaction(wallet int64, amount, price float64) error {
+	_, err := w.db.CreateWalletRecord(wallet, amount, price)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

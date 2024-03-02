@@ -30,9 +30,11 @@ func (h *Handler) Init() error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
+	fsm := NewFSM()
+
 	updates := h.bot.GetUpdatesChan(u)
 	for update := range updates {
-		ctx := NewContext(update, h.bot, h.logger)
+		ctx := NewContext(update, h.bot, fsm, h.logger)
 
 		switch ctx.Type {
 		case CallbackMessage:
@@ -40,7 +42,7 @@ func (h *Handler) Init() error {
 		case CommandMessage:
 			h.Commands(ctx)
 		case RegularMessage:
-
+			h.Messages(ctx)
 		}
 	}
 

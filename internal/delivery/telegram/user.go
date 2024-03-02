@@ -29,6 +29,8 @@ func (h *Handler) startError(err error) string {
 	return fmt.Sprintf("Sorry, I can't create new user, reason: %v", err)
 }
 
+// TODO Refactor keyboards
+
 func getCommandsKeyboard(commands []Command) [][]tgbotapi.KeyboardButton {
 	rows := math.Ceil(float64(len(commands)) / float64(2))
 	keyboard := make([][]tgbotapi.KeyboardButton, int(rows))

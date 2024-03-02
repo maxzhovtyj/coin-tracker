@@ -18,7 +18,7 @@ type Wallet interface {
 	Get(telegramID int64, wallet string) (db.CryptoWallet, error)
 	Create(telegramID int64, wallet string) error
 	All(telegramID int64) ([]db.CryptoWallet, error)
-	CreateWalletRecord(walletID int64, amount float64) (db.Transaction, error)
+	CreateWalletRecord(walletID int64, amount, price float64) (db.Transaction, error)
 }
 
 func New(conn db.DBTX) *Storage {

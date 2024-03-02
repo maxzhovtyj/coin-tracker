@@ -14,22 +14,17 @@ const (
 	RegularMessage  messageType = "message"
 )
 
-type State struct {
-	Command string
-}
-
-var usersState = map[int64]*State{}
-
 type Context struct {
 	UID               int64
 	CallbackDataValue string
-	Update            tgbotapi.Update
 	Type              messageType
+	FSM               *FSM
+	Update            tgbotapi.Update
 	api               *tgbotapi.BotAPI
 	logger            *zap.SugaredLogger
 }
 
-func NewContext(update tgbotapi.Update, api *tgbotapi.BotAPI, logger *zap.SugaredLogger) *Context {
+func NewContext(update tgbotapi.Update, api *tgbotapi.BotAPI, fsm *FSM, logger *zap.SugaredLogger) *Context {
 	msgType := RegularMessage
 
 	if update.Message != nil && update.Message.IsCommand() {
@@ -38,14 +33,11 @@ func NewContext(update tgbotapi.Update, api *tgbotapi.BotAPI, logger *zap.Sugare
 		msgType = CallbackMessage
 	}
 
-	if msgType == RegularMessage {
-
-	}
-
 	return &Context{
 		UID:    update.SentFrom().ID,
 		Update: update,
 		Type:   msgType,
+		FSM:    fsm,
 		api:    api,
 		logger: logger,
 	}
@@ -73,6 +65,10 @@ func (ctx *Context) Response(msg tgbotapi.MessageConfig) {
 		ctx.logger.Errorf("failed to send message: %v", err)
 		return
 	}
+}
+
+func (ctx *Context) ResponseWithError(msg tgbotapi.MessageConfig) (tgbotapi.Message, error) {
+	return ctx.api.Send(msg)
 }
 
 func (ctx *Context) UnknownCommand() string {

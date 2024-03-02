@@ -9,25 +9,22 @@ import (
 )
 
 func (h *Handler) NewWallet(ctx *Context) {
-	symbols := ctx.CommandArgs()
-	if len(symbols) != 1 {
-		ctx.ResponseString(h.invalidNewWalletArguments())
-		return
-	}
+	ctx.ResponseString("Please enter wallet name (ex. BTCUSDT, ETHUSDT)")
 
-	walletName := h.resolveWalletName(symbols[0])
+	ctx.FSM.Update(ctx.UID, State{
+		Command: newWalletCommand,
+		Step:    "wallet input",
+	})
+}
 
-	err := h.service.Wallet.Create(ctx.UID, walletName)
+func (h *Handler) ResolveNewWalletSteps(ctx *Context) {
+	err := h.service.Wallet.Create(ctx.UID, ctx.Update.Message.Text)
 	if err != nil {
 		ctx.ResponseString(h.newWalletError(err))
 		return
 	}
 
 	ctx.ResponseString(h.newWalletSuccess())
-}
-
-func (h *Handler) invalidNewWalletArguments() string {
-	return "Invalid command argument, expected: /newWallet <coin_symbol>"
 }
 
 func (h *Handler) newWalletError(err error) string {
@@ -51,7 +48,7 @@ func (h *Handler) Wallets(ctx *Context) {
 	}
 
 	msg := tgbotapi.NewMessage(ctx.UID, "There is the list of your wallets")
-	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(getKeyboardFromWallets(all)...)
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(getWalletCallbackKeyboard(all)...)
 	ctx.Response(msg)
 }
 
@@ -59,7 +56,7 @@ func (h *Handler) allWalletsError(err error) string {
 	return fmt.Sprintf("Sorry, I retrieve your wallets, reason: %v", err.Error())
 }
 
-func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.InlineKeyboardButton {
+func getWalletCallbackKeyboard(wallets []db.CryptoWallet) [][]tgbotapi.InlineKeyboardButton {
 	rows := math.Ceil(float64(len(wallets)) / float64(2))
 	keyboard := make([][]tgbotapi.InlineKeyboardButton, int(rows))
 

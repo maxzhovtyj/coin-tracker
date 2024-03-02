@@ -8,7 +8,7 @@ const (
 	walletCallback = "wallet"
 )
 
-func (h *handler.Handler) Callbacks(ctx *Context) {
+func (h *Handler) Callbacks(ctx *Context) {
 	cbData := ctx.Update.CallbackData()
 
 	idx := strings.IndexRune(cbData, '=')
