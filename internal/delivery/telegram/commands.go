@@ -7,12 +7,14 @@ const (
 	walletsCommand        Command = "wallets"
 	newWalletCommand      Command = "newWallet"
 	newTransactionCommand Command = "buy"
+	cancelCommand         Command = "cancel"
 )
 
 var usefulCommands = []Command{
 	walletsCommand,
 	newWalletCommand,
 	newTransactionCommand,
+	cancelCommand,
 }
 
 func (h *Handler) Commands(ctx *Context) {
@@ -25,7 +27,14 @@ func (h *Handler) Commands(ctx *Context) {
 		h.NewWallet(ctx)
 	case newTransactionCommand:
 		h.NewTransaction(ctx)
+	case cancelCommand:
+		h.Cancel(ctx)
 	default:
 		ctx.ResponseString(ctx.UnknownCommand())
 	}
+}
+
+func (h *Handler) Cancel(ctx *Context) {
+	ctx.FSM.Remove(ctx.UID)
+	ctx.ResponseString("All of your previous commands are canceled")
 }
