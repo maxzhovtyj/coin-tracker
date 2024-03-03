@@ -17,7 +17,7 @@ func (h *Handler) NewTransaction(ctx *Context) {
 	}
 
 	msg := tgbotapi.NewMessage(ctx.UID, "Please select wallet")
-	msg.ReplyMarkup = tgbotapi.NewReplyKeyboard(getKeyboardFromWallets(all)...)
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(getKeyboardFromWallets(all)...)
 
 	_, err = ctx.ResponseWithError(msg)
 	if err != nil {
@@ -31,15 +31,16 @@ func (h *Handler) NewTransaction(ctx *Context) {
 	})
 }
 
-func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.KeyboardButton {
+func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.InlineKeyboardButton {
 	rows := math.Ceil(float64(len(wallets)) / float64(2))
-	keyboard := make([][]tgbotapi.KeyboardButton, int(rows))
+	keyboard := make([][]tgbotapi.InlineKeyboardButton, int(rows))
 
 	var row int
 	var col int
 
 	for _, w := range wallets {
-		keyboard[row] = append(keyboard[row], tgbotapi.NewKeyboardButton(w.Name))
+		cbData := fmt.Sprintf("%s=%s", newTransactionCallback, w.Name)
+		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(w.Name, cbData))
 
 		if (col+1)%2 == 0 {
 			col = 0
@@ -78,7 +79,7 @@ func (h *Handler) ResolveNewTransactionSteps(ctx *Context) {
 }
 
 func (h *Handler) selectWalletStep(ctx *Context) {
-	wallet, err := h.service.Wallet.Get(ctx.UID, h.resolveWalletName(ctx.Update.Message.Text))
+	wallet, err := h.service.Wallet.Get(ctx.UID, h.resolveWalletName(ctx.CallbackDataValue))
 	if err != nil {
 		ctx.ResponseString(fmt.Sprintf("Sorry, I can't find this wallet, %v", err))
 		return
