@@ -31,3 +31,23 @@ INSERT INTO transactions (wallet_id, amount, price) VALUES (?, ?, ?) RETURNING *
 
 -- name: UpdateWalletBalance :one
 UPDATE crypto_wallets SET amount = amount + ?  WHERE id = ? RETURNING *;
+
+-- name: GetSubscriptions :many
+SELECT *
+FROM subscriptions;
+
+-- name: GetUserSubscriptions :many
+SELECT *
+FROM subscriptions
+WHERE user_id = ?;
+
+-- name: GetUserSubscription :one
+SELECT *
+FROM subscriptions
+WHERE user_id = ? AND type = ?;
+
+-- name: CreateSubscription :one
+INSERT INTO subscriptions (type, user_id, data, notify_interval) VALUES (?, ?, ?, ?) RETURNING *;
+
+-- name: UpdateLastNotifiedAt :one
+UPDATE subscriptions SET last_notified_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *;

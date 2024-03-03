@@ -27,6 +27,9 @@ func NewHandler(cfg *config.Config, bot *tgbotapi.BotAPI, service *service.Servi
 func (h *Handler) Init() error {
 	h.logger.Infof("authorized on account %s", h.bot.Self.UserName)
 
+	h.logger.Infof("init subscriptions worker")
+	go h.Subscriptions()
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 

@@ -8,6 +8,7 @@ const (
 	newWalletCommand      Command = "newWallet"
 	newTransactionCommand Command = "buy"
 	netWorthCommand       Command = "netWorth"
+	subscribeCoinCommand  Command = "subscribeCoin"
 	cancelCommand         Command = "cancel"
 )
 
@@ -16,6 +17,7 @@ var usefulCommands = []Command{
 	newWalletCommand,
 	newTransactionCommand,
 	netWorthCommand,
+	subscribeCoinCommand,
 	cancelCommand,
 }
 
@@ -31,6 +33,8 @@ func (h *Handler) Commands(ctx *Context) {
 		h.NewTransaction(ctx)
 	case netWorthCommand:
 		h.UserNetWorth(ctx)
+	case subscribeCoinCommand:
+		h.SubscribeCoin(ctx)
 	case cancelCommand:
 		h.Cancel(ctx)
 	default:

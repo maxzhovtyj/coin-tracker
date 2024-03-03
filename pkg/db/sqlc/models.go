@@ -5,6 +5,7 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -14,6 +15,15 @@ type CryptoWallet struct {
 	Name      string
 	Amount    float64
 	CreatedAt time.Time
+}
+
+type Subscription struct {
+	ID             int64
+	Type           string
+	UserID         int64
+	Data           string
+	NotifyInterval string
+	LastNotifiedAt sql.NullTime
 }
 
 type Transaction struct {

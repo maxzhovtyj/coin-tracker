@@ -8,6 +8,7 @@ import (
 type Storage struct {
 	User
 	Wallet
+	Subscription
 }
 
 type User interface {
@@ -21,9 +22,16 @@ type Wallet interface {
 	CreateWalletRecord(walletID int64, amount, price float64) (db.Transaction, error)
 }
 
+type Subscription interface {
+	All() ([]db.Subscription, error)
+	Create(uid int64, subscriptionType, data, interval string) (db.Subscription, error)
+	UpdateLastNotifiedAt(id int64) error
+}
+
 func New(conn db.DBTX) *Storage {
 	return &Storage{
-		User:   sqlc.NewUserStorage(conn),
-		Wallet: sqlc.NewWalletStorage(conn),
+		User:         sqlc.NewUserStorage(conn),
+		Wallet:       sqlc.NewWalletStorage(conn),
+		Subscription: sqlc.NewSubscriptionStorage(conn),
 	}
 }

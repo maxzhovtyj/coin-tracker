@@ -25,3 +25,14 @@ CREATE TABLE transactions
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (wallet_id) REFERENCES crypto_wallets (id)
 );
+
+CREATE TABLE subscriptions
+(
+    "id"               INTEGER PRIMARY KEY AUTOINCREMENT,
+    "type"             VARCHAR(128) NOT NULL,
+    "user_id"          INTEGER      NOT NULL,
+    "data"             VARCHAR      NOT NULL,
+    "notify_interval"  VARCHAR      NOT NULL,
+    "last_notified_at" TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);

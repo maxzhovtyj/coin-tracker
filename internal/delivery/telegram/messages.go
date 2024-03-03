@@ -8,5 +8,7 @@ func (h *Handler) Messages(ctx *Context) {
 		h.ResolveNewWalletSteps(ctx)
 	case newTransactionCommand:
 		h.ResolveNewTransactionSteps(ctx)
+	case subscribeCoinCommand:
+		h.ResolveSubscribeCoinSteps(ctx)
 	}
 }

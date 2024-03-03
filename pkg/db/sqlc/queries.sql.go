@@ -9,6 +9,36 @@ import (
 	"context"
 )
 
+const createSubscription = `-- name: CreateSubscription :one
+INSERT INTO subscriptions (type, user_id, data, notify_interval) VALUES (?, ?, ?, ?) RETURNING id, type, user_id, data, notify_interval, last_notified_at
+`
+
+type CreateSubscriptionParams struct {
+	Type           string
+	UserID         int64
+	Data           string
+	NotifyInterval string
+}
+
+func (q *Queries) CreateSubscription(ctx context.Context, arg CreateSubscriptionParams) (Subscription, error) {
+	row := q.db.QueryRowContext(ctx, createSubscription,
+		arg.Type,
+		arg.UserID,
+		arg.Data,
+		arg.NotifyInterval,
+	)
+	var i Subscription
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.UserID,
+		&i.Data,
+		&i.NotifyInterval,
+		&i.LastNotifiedAt,
+	)
+	return i, err
+}
+
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (wallet_id, amount, price) VALUES (?, ?, ?) RETURNING id, wallet_id, amount, price, created_at
 `
@@ -69,6 +99,41 @@ func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletPara
 	return i, err
 }
 
+const getSubscriptions = `-- name: GetSubscriptions :many
+SELECT id, type, user_id, data, notify_interval, last_notified_at
+FROM subscriptions
+`
+
+func (q *Queries) GetSubscriptions(ctx context.Context) ([]Subscription, error) {
+	rows, err := q.db.QueryContext(ctx, getSubscriptions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Subscription
+	for rows.Next() {
+		var i Subscription
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.UserID,
+			&i.Data,
+			&i.NotifyInterval,
+			&i.LastNotifiedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
 SELECT id, telegram_id, created_at
 FROM users
@@ -81,6 +146,67 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 	var i User
 	err := row.Scan(&i.ID, &i.TelegramID, &i.CreatedAt)
 	return i, err
+}
+
+const getUserSubscription = `-- name: GetUserSubscription :one
+SELECT id, type, user_id, data, notify_interval, last_notified_at
+FROM subscriptions
+WHERE user_id = ? AND type = ?
+`
+
+type GetUserSubscriptionParams struct {
+	UserID int64
+	Type   string
+}
+
+func (q *Queries) GetUserSubscription(ctx context.Context, arg GetUserSubscriptionParams) (Subscription, error) {
+	row := q.db.QueryRowContext(ctx, getUserSubscription, arg.UserID, arg.Type)
+	var i Subscription
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.UserID,
+		&i.Data,
+		&i.NotifyInterval,
+		&i.LastNotifiedAt,
+	)
+	return i, err
+}
+
+const getUserSubscriptions = `-- name: GetUserSubscriptions :many
+SELECT id, type, user_id, data, notify_interval, last_notified_at
+FROM subscriptions
+WHERE user_id = ?
+`
+
+func (q *Queries) GetUserSubscriptions(ctx context.Context, userID int64) ([]Subscription, error) {
+	rows, err := q.db.QueryContext(ctx, getUserSubscriptions, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Subscription
+	for rows.Next() {
+		var i Subscription
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.UserID,
+			&i.Data,
+			&i.NotifyInterval,
+			&i.LastNotifiedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUserWallet = `-- name: GetUserWallet :one
@@ -142,6 +268,24 @@ func (q *Queries) GetUserWallets(ctx context.Context, userID int64) ([]CryptoWal
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateLastNotifiedAt = `-- name: UpdateLastNotifiedAt :one
+UPDATE subscriptions SET last_notified_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING id, type, user_id, data, notify_interval, last_notified_at
+`
+
+func (q *Queries) UpdateLastNotifiedAt(ctx context.Context, id int64) (Subscription, error) {
+	row := q.db.QueryRowContext(ctx, updateLastNotifiedAt, id)
+	var i Subscription
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.UserID,
+		&i.Data,
+		&i.NotifyInterval,
+		&i.LastNotifiedAt,
+	)
+	return i, err
 }
 
 const updateWalletBalance = `-- name: UpdateWalletBalance :one

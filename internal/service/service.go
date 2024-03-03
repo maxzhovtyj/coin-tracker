@@ -5,11 +5,13 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/storage"
 	"github.com/maxzhovtyj/coin-tracker/pkg/binance"
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
+	"time"
 )
 
 type Service struct {
 	User
 	Wallet
+	Subscription
 }
 
 type User interface {
@@ -24,9 +26,17 @@ type Wallet interface {
 	NetWorth(telegramID int64) (models.UserNetWorth, error)
 }
 
+type Subscription interface {
+	All() ([]models.Subscription, error)
+	NewCoinSubscription(uid int64, coinName string, interval time.Duration) error
+	Notified(id int64) error
+	CoinTicker(coin, windowSize string) (binance.SymbolTicker, error)
+}
+
 func New(storage *storage.Storage, api binance.API) *Service {
 	return &Service{
-		User:   NewUserService(storage.User),
-		Wallet: NewWalletService(storage.Wallet, api),
+		User:         NewUserService(storage.User),
+		Wallet:       NewWalletService(storage.Wallet, api),
+		Subscription: NewSubscriptionService(storage.Subscription, api),
 	}
 }
