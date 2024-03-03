@@ -15,3 +15,16 @@ func Test(t *testing.T) {
 
 	fmt.Println(do[0].Price)
 }
+
+func TestApi_CoinsList(t *testing.T) {
+	s := []string{"ETHUSDT", "BTCUSDT"}
+
+	list, err := NewAPI().CoinsList(s...)
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, l := range list {
+		fmt.Println(l.Symbol, l.Price)
+	}
+}

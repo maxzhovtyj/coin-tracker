@@ -6,6 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	"math"
+	"strings"
 )
 
 func (h *Handler) CreateUser(ctx *Context) {
@@ -50,4 +51,26 @@ func getCommandsKeyboard(commands []Command) [][]tgbotapi.KeyboardButton {
 	}
 
 	return keyboard
+}
+
+func (h *Handler) UserNetWorth(ctx *Context) {
+	netWorth, err := h.service.NetWorth(ctx.UID)
+	if err != nil {
+		ctx.ResponseString("Sorry, can't get your net worth, " + err.Error())
+		return
+
+	}
+
+	ctx.ResponseString(h.netWorthSuccess(netWorth))
+}
+
+func (h *Handler) netWorthSuccess(worth models.UserNetWorth) string {
+	var b strings.Builder
+
+	b.WriteString(fmt.Sprintf("Your net worth: %f $ \n\n", worth.Balance))
+	for _, w := range worth.Wallets {
+		b.WriteString(fmt.Sprintf("* Name: %s\n  Price: %f\n  Amount: %f\n  Balance: %f\n\n", w.Name, w.Price, w.Amount, w.Balance))
+	}
+
+	return b.String()
 }

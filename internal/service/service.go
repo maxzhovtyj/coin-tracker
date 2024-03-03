@@ -21,6 +21,7 @@ type Wallet interface {
 	Create(telegramID int64, wallet string) error
 	All(telegramID int64) ([]db.CryptoWallet, error)
 	NewTransaction(wallet int64, amount, price float64) error
+	NetWorth(telegramID int64) (models.UserNetWorth, error)
 }
 
 func New(storage *storage.Storage, api binance.API) *Service {

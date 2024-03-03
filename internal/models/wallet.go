@@ -8,3 +8,8 @@ type Wallet struct {
 	Amount  float64 `json:"amount,omitempty"`
 	Balance float64 `json:"balance,omitempty"`
 }
+
+type UserNetWorth struct {
+	Balance float64
+	Wallets []Wallet
+}
