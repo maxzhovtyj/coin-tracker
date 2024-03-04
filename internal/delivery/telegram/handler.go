@@ -24,6 +24,12 @@ func NewHandler(cfg *config.Config, bot *tgbotapi.BotAPI, service *service.Servi
 	}
 }
 
+var usersWhitelist = map[string]struct{}{
+	"maxzhovtyj":  {},
+	"vadimkrivko": {},
+	"Andrii2324":  {},
+}
+
 func (h *Handler) Init() error {
 	h.logger.Infof("authorized on account %s", h.bot.Self.UserName)
 
@@ -38,6 +44,11 @@ func (h *Handler) Init() error {
 	updates := h.bot.GetUpdatesChan(u)
 	for update := range updates {
 		ctx := NewContext(update, h.bot, fsm, h.logger)
+
+		if _, ok := usersWhitelist[update.SentFrom().UserName]; !ok {
+			ctx.ResponseString("Sorry, you are not allowed to use this bot")
+			continue
+		}
 
 		switch ctx.Type {
 		case CallbackMessage:
