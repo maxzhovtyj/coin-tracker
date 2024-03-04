@@ -136,8 +136,6 @@ func (h *Handler) processCoinSubscription(s models.Subscription) {
 
 func (h *Handler) coinSubscriptionText(ticker binance.SymbolTicker) string {
 	return fmt.Sprintf(`
------------------------------------
-
 Here is your %s coin update 💲🤑💰:
 
   Price Change %s
