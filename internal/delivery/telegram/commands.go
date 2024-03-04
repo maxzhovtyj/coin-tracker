@@ -3,13 +3,14 @@ package telegram
 type Command string
 
 const (
-	startCommand          Command = "start"
-	walletsCommand        Command = "wallets"
-	newWalletCommand      Command = "newWallet"
-	newTransactionCommand Command = "buy"
-	netWorthCommand       Command = "netWorth"
-	subscribeCoinCommand  Command = "subscribeCoin"
-	cancelCommand         Command = "cancel"
+	startCommand                  Command = "start"
+	walletsCommand                Command = "wallets"
+	newWalletCommand              Command = "newWallet"
+	newTransactionCommand         Command = "buy"
+	netWorthCommand               Command = "netWorth"
+	subscribeCoinCommand          Command = "subscribeCoin"
+	cancelCoinSubscriptionCommand Command = "cancelSubscription"
+	cancelCommand                 Command = "cancel"
 )
 
 var usefulCommands = []Command{
@@ -18,6 +19,7 @@ var usefulCommands = []Command{
 	newTransactionCommand,
 	netWorthCommand,
 	subscribeCoinCommand,
+	cancelCoinSubscriptionCommand,
 	cancelCommand,
 }
 
@@ -35,6 +37,8 @@ func (h *Handler) Commands(ctx *Context) {
 		h.UserNetWorth(ctx)
 	case subscribeCoinCommand:
 		h.SubscribeCoin(ctx)
+	case cancelCoinSubscriptionCommand:
+		h.CancelCoinSubscription(ctx)
 	case cancelCommand:
 		h.Cancel(ctx)
 	default:

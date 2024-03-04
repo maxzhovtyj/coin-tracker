@@ -25,6 +25,32 @@ func NewSubscriptionService(db storage.Subscription, api binance.API) *Subscript
 	}
 }
 
+func (s *SubscriptionService) UserSubscriptions(uid int64) ([]models.Subscription, error) {
+	subscriptions, err := s.db.UserSubscriptions(uid)
+	if err != nil {
+		return nil, err
+	}
+
+	subs := make([]models.Subscription, len(subscriptions))
+	for i, sub := range subscriptions {
+		d, err := time.ParseDuration(sub.NotifyInterval)
+		if err != nil {
+			return nil, err
+		}
+
+		subs[i] = models.Subscription{
+			ID:             sub.ID,
+			Type:           sub.Type,
+			ChatID:         sub.UserID,
+			Data:           sub.Data,
+			NotifyInterval: d,
+			LastNotifiedAt: sub.LastNotifiedAt.Time,
+		}
+	}
+
+	return subs, nil
+}
+
 func (s *SubscriptionService) CoinTicker(coin, windowSize string) (binance.SymbolTicker, error) {
 	return s.api.CoinTicker(coin, windowSize)
 }

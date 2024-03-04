@@ -24,6 +24,7 @@ type Wallet interface {
 
 type Subscription interface {
 	All() ([]db.Subscription, error)
+	UserSubscriptions(uid int64) ([]db.Subscription, error)
 	Create(uid int64, subscriptionType, data, interval string) (db.Subscription, error)
 	UpdateLastNotifiedAt(id int64) error
 }

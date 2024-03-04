@@ -7,6 +7,7 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	"github.com/maxzhovtyj/coin-tracker/internal/service"
 	"github.com/maxzhovtyj/coin-tracker/pkg/binance"
+	"math"
 	"time"
 )
 
@@ -157,4 +158,38 @@ Here is your %s coin update 💲🤑💰:
 		ticker.LowPrice,
 		ticker.LastPrice,
 	)
+}
+
+func (h *Handler) CancelCoinSubscription(ctx *Context) {
+	subscriptions, err := h.service.Subscription.UserSubscriptions(ctx.UID)
+	if err != nil {
+		ctx.ResponseString("Can't get your subscriptions, " + err.Error())
+		return
+	}
+
+	msg := tgbotapi.NewMessage(ctx.UID, "Here is the list of your subscriptions")
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(h.subscriptionsInlineKeyboard(subscriptions)...)
+	ctx.Response(msg)
+}
+
+func (h *Handler) subscriptionsInlineKeyboard(subs []models.Subscription) [][]tgbotapi.InlineKeyboardButton {
+	rows := math.Ceil(float64(len(subs)) / float64(2))
+	keyboard := make([][]tgbotapi.InlineKeyboardButton, int(rows))
+
+	var row int
+	var col int
+
+	for _, t := range subs {
+		cbData := fmt.Sprintf("%s=%s", "cancelSubscription", t.Type)
+		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(t.Type, cbData))
+
+		if (col+1)%2 == 0 {
+			col = 0
+			row++
+		} else {
+			col++
+		}
+	}
+
+	return keyboard
 }

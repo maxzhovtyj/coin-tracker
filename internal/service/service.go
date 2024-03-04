@@ -28,6 +28,7 @@ type Wallet interface {
 
 type Subscription interface {
 	All() ([]models.Subscription, error)
+	UserSubscriptions(uid int64) ([]models.Subscription, error)
 	NewCoinSubscription(uid int64, coinName string, interval time.Duration) error
 	Notified(id int64) error
 	CoinTicker(coin, windowSize string) (binance.SymbolTicker, error)
