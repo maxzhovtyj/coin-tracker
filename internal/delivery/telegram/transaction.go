@@ -8,6 +8,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (h *Handler) NewTransaction(ctx *Context) {
@@ -185,7 +186,7 @@ func (h *Handler) formatTransactions(trs []models.Transaction) string {
 	Amount: %f
 	Price: %f 
 
-`, tr.CreatedAt, t, tr.Amount, tr.Price)
+`, tr.CreatedAt.Format(time.DateTime), t, tr.Amount, tr.Price)
 
 		b.WriteString(s)
 	}
