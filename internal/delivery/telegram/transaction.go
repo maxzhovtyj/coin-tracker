@@ -184,9 +184,12 @@ func (h *Handler) formatTransactions(trs []models.Transaction) string {
 		s := fmt.Sprintf(`
 %s %s:
 	Amount: %f
-	Price: %f 
-
+	Price: %f
 `, tr.CreatedAt.Format(time.DateTime), t, tr.Amount, tr.Price)
+
+		if t == "Bought" {
+			s += fmt.Sprintf("\tSpend: %f\n", tr.Amount*tr.Price)
+		}
 
 		b.WriteString(s)
 	}
