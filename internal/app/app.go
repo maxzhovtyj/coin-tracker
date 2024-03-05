@@ -33,7 +33,7 @@ func Run() error {
 
 	appStorage := storage.New(db)
 
-	api := binance.NewAPI()
+	api := binance.NewAPI(cfg.Binance.ApiKey, cfg.Binance.SecretKey)
 	appService := service.New(appStorage, api)
 
 	bot, err := tgbotapi.NewBotAPI(cfg.TelegramApiToken)

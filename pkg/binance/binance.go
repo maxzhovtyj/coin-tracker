@@ -18,9 +18,9 @@ type api struct {
 	client *binance.Client
 }
 
-func NewAPI() API {
+func NewAPI(apiKey, secretKey string) API {
 	return &api{
-		client: binance.NewClient("", ""),
+		client: binance.NewClient(apiKey, secretKey),
 	}
 }
 

@@ -9,8 +9,14 @@ import (
 )
 
 type Config struct {
-	TelegramApiToken string `yaml:"telegramApiToken"`
-	DBPath           string `yaml:"dbPath"`
+	TelegramApiToken string  `yaml:"telegramApiToken"`
+	DBPath           string  `yaml:"dbPath"`
+	Binance          Binance `yaml:"binance"`
+}
+
+type Binance struct {
+	ApiKey    string `yaml:"apiKey"`
+	SecretKey string `yaml:"secretKey"`
 }
 
 var (

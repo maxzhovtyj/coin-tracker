@@ -8,7 +8,7 @@ import (
 func TestApi_CoinsList(t *testing.T) {
 	s := []string{"ETHUSDT", "BTCUSDT"}
 
-	list, err := NewAPI().CoinsList(s...)
+	list, err := NewAPI("", "").CoinsList(s...)
 	if err != nil {
 		t.Error(err)
 	}
@@ -19,7 +19,7 @@ func TestApi_CoinsList(t *testing.T) {
 }
 
 func TestApi_CoinTicker(t *testing.T) {
-	ticker, err := NewAPI().CoinTicker("APTUSDT", "1h")
+	ticker, err := NewAPI("", "").CoinTicker("APTUSDT", "1h")
 	if err != nil {
 		t.Error(err)
 	}

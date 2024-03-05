@@ -33,7 +33,7 @@ func (h *Handler) startError(err error) string {
 // TODO Refactor keyboards
 
 func getCommandsKeyboard(commands []Command) [][]tgbotapi.KeyboardButton {
-	rows := math.Ceil(float64(len(commands)) / float64(2))
+	rows := math.Ceil(float64(len(commands)) / float64(3))
 	keyboard := make([][]tgbotapi.KeyboardButton, int(rows))
 
 	var row int
@@ -42,7 +42,7 @@ func getCommandsKeyboard(commands []Command) [][]tgbotapi.KeyboardButton {
 	for _, t := range commands {
 		keyboard[row] = append(keyboard[row], tgbotapi.NewKeyboardButton("/"+string(t)))
 
-		if (col+1)%2 == 0 {
+		if (col+1)%3 == 0 {
 			col = 0
 			row++
 		} else {
