@@ -3,15 +3,22 @@ package telegram
 type Command string
 
 const (
-	startCommand                  Command = "start"
-	walletsCommand                Command = "wallets"
-	newWalletCommand              Command = "newWallet"
-	buyCommand                    Command = "buy"
-	sellCommand                   Command = "sell"
-	netWorthCommand               Command = "netWorth"
+	startCommand Command = "start"
+	// TODO add help command
+
+	// TODO combine newWallet with wallets
+	walletsCommand   Command = "wallets"
+	newWalletCommand Command = "newWallet"
+
+	buyCommand      Command = "buy"
+	sellCommand     Command = "sell"
+	netWorthCommand Command = "netWorth"
+
+	// TODO combine subscribe and cancelSubscription into subscriptions
 	subscribeCoinCommand          Command = "subscribeCoin"
 	cancelCoinSubscriptionCommand Command = "cancelSubscription"
-	cancelCommand                 Command = "cancel"
+
+	cancelCommand Command = "cancel"
 )
 
 var usefulCommands = []Command{
