@@ -12,6 +12,33 @@ type WalletService struct {
 	api binance.API
 }
 
+func NewWalletService(db storage.Wallet, api binance.API) *WalletService {
+	return &WalletService{
+		db:  db,
+		api: api,
+	}
+}
+
+func (w *WalletService) GetTransactions(wallet int64) ([]models.Transaction, error) {
+	raw, err := w.db.GetTransactions(wallet)
+	if err != nil {
+		return nil, err
+	}
+
+	transactions := make([]models.Transaction, len(raw))
+	for i, tr := range raw {
+		transactions[i] = models.Transaction{
+			ID:        tr.ID,
+			WalletID:  tr.WalletID,
+			Amount:    tr.Amount,
+			Price:     tr.Price,
+			CreatedAt: tr.CreatedAt,
+		}
+	}
+
+	return transactions, nil
+}
+
 func (w *WalletService) NewTransaction(wallet int64, amount, price float64) error {
 	_, err := w.db.CreateWalletRecord(wallet, amount, price)
 	if err != nil {
@@ -19,13 +46,6 @@ func (w *WalletService) NewTransaction(wallet int64, amount, price float64) erro
 	}
 
 	return nil
-}
-
-func NewWalletService(db storage.Wallet, api binance.API) *WalletService {
-	return &WalletService{
-		db:  db,
-		api: api,
-	}
 }
 
 func (w *WalletService) NetWorth(telegramID int64) (models.UserNetWorth, error) {

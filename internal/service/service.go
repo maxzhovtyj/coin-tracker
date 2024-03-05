@@ -24,6 +24,7 @@ type Wallet interface {
 	All(telegramID int64) ([]db.CryptoWallet, error)
 	NewTransaction(wallet int64, amount, price float64) error
 	NetWorth(telegramID int64) (models.UserNetWorth, error)
+	GetTransactions(wallet int64) ([]models.Transaction, error)
 }
 
 type Subscription interface {

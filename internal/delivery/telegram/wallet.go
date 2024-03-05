@@ -87,7 +87,10 @@ func (h *Handler) Wallet(ctx *Context) {
 		return
 	}
 
-	ctx.ResponseString(h.walletSuccess(wallet))
+	msg := tgbotapi.NewMessage(ctx.UID, h.walletSuccess(wallet))
+	btn := tgbotapi.NewInlineKeyboardButtonData("Transactions", "walletTransactions="+fmt.Sprintf("%d", wallet.Id))
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup([]tgbotapi.InlineKeyboardButton{btn})
+	ctx.Response(msg)
 }
 
 func (h *Handler) walletError(err error) string {

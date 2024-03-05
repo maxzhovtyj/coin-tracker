@@ -20,6 +20,7 @@ type Wallet interface {
 	Create(telegramID int64, wallet string) error
 	All(telegramID int64) ([]db.CryptoWallet, error)
 	CreateWalletRecord(walletID int64, amount, price float64) (db.Transaction, error)
+	GetTransactions(walletID int64) ([]db.Transaction, error)
 }
 
 type Subscription interface {

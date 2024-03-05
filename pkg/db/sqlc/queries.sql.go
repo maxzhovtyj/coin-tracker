@@ -134,6 +134,39 @@ func (q *Queries) GetSubscriptions(ctx context.Context) ([]Subscription, error) 
 	return items, nil
 }
 
+const getTransactions = `-- name: GetTransactions :many
+SELECT id, wallet_id, amount, price, created_at FROM transactions WHERE wallet_id = ? ORDER BY created_at DESC
+`
+
+func (q *Queries) GetTransactions(ctx context.Context, walletID int64) ([]Transaction, error) {
+	rows, err := q.db.QueryContext(ctx, getTransactions, walletID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Transaction
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.WalletID,
+			&i.Amount,
+			&i.Price,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
 SELECT id, telegram_id, created_at
 FROM users

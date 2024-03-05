@@ -7,6 +7,7 @@ import (
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
 	"math"
 	"strconv"
+	"strings"
 )
 
 func (h *Handler) NewTransaction(ctx *Context) {
@@ -149,4 +150,45 @@ func (h *Handler) inputTransactionPriceStep(ctx *Context) {
 
 	ctx.ResponseString("Transaction successfully saved")
 	ctx.FSM.Remove(ctx.UID)
+}
+
+func (h *Handler) WalletTransactions(ctx *Context) {
+	wid, err := strconv.ParseInt(ctx.CallbackDataValue, 10, 64)
+	if err != nil {
+		ctx.ResponseString("Invalid wallet, expected number")
+		return
+	}
+
+	transactions, err := h.service.Wallet.GetTransactions(wid)
+	if err != nil {
+		ctx.ResponseString(h.walletError(err))
+		return
+	}
+
+	ctx.ResponseString(h.formatTransactions(transactions))
+}
+
+func (h *Handler) formatTransactions(trs []models.Transaction) string {
+	var b strings.Builder
+
+	for _, tr := range trs {
+		var t string
+
+		if tr.Amount >= 0 {
+			t = "Bought"
+		} else {
+			t = "Sold"
+		}
+
+		s := fmt.Sprintf(`
+%s %s:
+	Amount: %f
+	Price: %f 
+
+`, tr.CreatedAt, t, tr.Amount, tr.Price)
+
+		b.WriteString(s)
+	}
+
+	return b.String()
 }

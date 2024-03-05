@@ -5,8 +5,9 @@ import (
 )
 
 const (
-	walletCallback         = "wallet"
-	newTransactionCallback = "newTransaction"
+	walletCallback             = "wallet"
+	newTransactionCallback     = "newTransaction"
+	walletTransactionsCallback = "walletTransactions"
 )
 
 func (h *Handler) Callbacks(ctx *Context) {
@@ -26,5 +27,8 @@ func (h *Handler) Callbacks(ctx *Context) {
 		h.Wallet(ctx)
 	case newTransactionCallback:
 		h.ResolveNewTransactionSteps(ctx)
+	case walletTransactionsCallback:
+		h.WalletTransactions(ctx)
 	}
+
 }

@@ -15,6 +15,13 @@ type WalletStorage struct {
 	q     *db.Queries
 }
 
+func (w *WalletStorage) GetTransactions(walletID int64) ([]db.Transaction, error) {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	return w.q.GetTransactions(ctx, walletID)
+}
+
 func NewWalletStorage(conn db.DBTX) *WalletStorage {
 	dbRaw, ok := conn.(*sql.DB)
 	if !ok {
