@@ -33,7 +33,7 @@ func (a *api) Coin(symbol string) (float64, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
-	symbols, err := a.client.NewListPricesService().Symbol(symbol).Do(ctx, []binance.RequestOption{}...)
+	symbols, err := a.client.NewListPricesService().Symbol(symbol).Do(ctx)
 	if err != nil {
 		return 0, err
 	}

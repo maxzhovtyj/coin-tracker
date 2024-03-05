@@ -6,7 +6,7 @@ func (h *Handler) Messages(ctx *Context) {
 	switch state.Command {
 	case newWalletCommand:
 		h.ResolveNewWalletSteps(ctx)
-	case newTransactionCommand:
+	case buyCommand, sellCommand:
 		h.ResolveNewTransactionSteps(ctx)
 	case subscribeCoinCommand:
 		h.ResolveSubscribeCoinSteps(ctx)

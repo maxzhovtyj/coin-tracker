@@ -6,7 +6,8 @@ const (
 	startCommand                  Command = "start"
 	walletsCommand                Command = "wallets"
 	newWalletCommand              Command = "newWallet"
-	newTransactionCommand         Command = "buy"
+	buyCommand                    Command = "buy"
+	sellCommand                   Command = "sell"
 	netWorthCommand               Command = "netWorth"
 	subscribeCoinCommand          Command = "subscribeCoin"
 	cancelCoinSubscriptionCommand Command = "cancelSubscription"
@@ -16,7 +17,8 @@ const (
 var usefulCommands = []Command{
 	walletsCommand,
 	newWalletCommand,
-	newTransactionCommand,
+	buyCommand,
+	sellCommand,
 	netWorthCommand,
 	subscribeCoinCommand,
 	cancelCoinSubscriptionCommand,
@@ -31,7 +33,9 @@ func (h *Handler) Commands(ctx *Context) {
 		h.Wallets(ctx)
 	case newWalletCommand:
 		h.NewWallet(ctx)
-	case newTransactionCommand:
+	case buyCommand:
+		h.NewTransaction(ctx)
+	case sellCommand:
 		h.NewTransaction(ctx)
 	case netWorthCommand:
 		h.UserNetWorth(ctx)

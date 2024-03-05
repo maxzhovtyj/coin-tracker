@@ -26,7 +26,7 @@ func (h *Handler) NewTransaction(ctx *Context) {
 	}
 
 	ctx.FSM.Update(ctx.UID, State{
-		Command: newTransactionCommand,
+		Command: Command(ctx.Command()),
 		Step:    selectWalletStep,
 	})
 }
@@ -88,7 +88,7 @@ func (h *Handler) selectWalletStep(ctx *Context) {
 	ctx.ResponseString("Please enter amount (number)")
 
 	ctx.FSM.Update(ctx.UID, State{
-		Command: newTransactionCommand,
+		Command: ctx.FSM.Get(ctx.UID).Command,
 		Step:    inputAmountStep,
 		Data: NewTransactionData{
 			Wallet: wallet,
@@ -97,7 +97,9 @@ func (h *Handler) selectWalletStep(ctx *Context) {
 }
 
 func (h *Handler) inputTransactionAmountStep(ctx *Context) {
-	data, ok := ctx.FSM.Get(ctx.UID).Data.(NewTransactionData)
+	state := ctx.FSM.Get(ctx.UID)
+
+	data, ok := state.Data.(NewTransactionData)
 	if !ok {
 		ctx.ResponseString("Error while processing command")
 		ctx.FSM.Remove(ctx.UID)
@@ -110,17 +112,23 @@ func (h *Handler) inputTransactionAmountStep(ctx *Context) {
 		return
 	}
 
+	if state.Command == sellCommand {
+		amount = -amount
+	}
+
 	ctx.ResponseString("Input coin price")
 	data.Amount = amount
 	ctx.FSM.Update(ctx.UID, State{
-		Command: newTransactionCommand,
+		Command: state.Command,
 		Step:    inputPriceStep,
 		Data:    data,
 	})
 }
 
 func (h *Handler) inputTransactionPriceStep(ctx *Context) {
-	data, ok := ctx.FSM.Get(ctx.UID).Data.(NewTransactionData)
+	state := ctx.FSM.Get(ctx.UID)
+
+	data, ok := state.Data.(NewTransactionData)
 	if !ok {
 		ctx.ResponseString("Error while processing command")
 		ctx.FSM.Remove(ctx.UID)

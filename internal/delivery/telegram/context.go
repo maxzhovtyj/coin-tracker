@@ -18,6 +18,7 @@ type Context struct {
 	UID               int64
 	CallbackDataValue string
 	Type              messageType
+	CommandType       string
 	FSM               *FSM
 	Update            tgbotapi.Update
 	api               *tgbotapi.BotAPI
@@ -25,21 +26,25 @@ type Context struct {
 }
 
 func NewContext(update tgbotapi.Update, api *tgbotapi.BotAPI, fsm *FSM, logger *zap.SugaredLogger) *Context {
+	var cmdType string
+
 	msgType := RegularMessage
 
 	if update.Message != nil && update.Message.IsCommand() {
 		msgType = CommandMessage
+		cmdType = update.Message.Command()
 	} else if update.CallbackQuery != nil {
 		msgType = CallbackMessage
 	}
 
 	return &Context{
-		UID:    update.SentFrom().ID,
-		Update: update,
-		Type:   msgType,
-		FSM:    fsm,
-		api:    api,
-		logger: logger,
+		UID:         update.SentFrom().ID,
+		Update:      update,
+		Type:        msgType,
+		CommandType: cmdType,
+		FSM:         fsm,
+		api:         api,
+		logger:      logger,
 	}
 }
 
