@@ -19,8 +19,8 @@ const (
 func (h *Handler) SubscribeCoin(ctx *Context) {
 	ctx.ResponseString("Please enter coin name to subscribe")
 	ctx.FSM.Update(ctx.UID, State{
-		Command: subscribeCoinCommand,
-		Step:    subscribeCoinNameInputStep,
+		Caller: subscribeCoinCommand.String(),
+		Step:   subscribeCoinNameInputStep,
 	})
 }
 
@@ -46,8 +46,8 @@ func (h *Handler) subscribeCoinNameInputStep(ctx *Context) {
 	ctx.ResponseString("Please enter notifying interval (Ex.: 30m, 3h, 1d)")
 
 	ctx.FSM.Update(ctx.UID, State{
-		Command: subscribeCoinCommand,
-		Step:    subscribeCoinIntervalInputStep,
+		Caller: subscribeCoinCommand.String(),
+		Step:   subscribeCoinIntervalInputStep,
 		Data: SubscribeCoinInput{
 			CoinName: coinName,
 		},
@@ -79,7 +79,7 @@ func (h *Handler) subscribeCoinIntervalInputStep(ctx *Context) {
 }
 
 func (h *Handler) Subscriptions() {
-	for range time.Tick(5 * time.Minute) {
+	for range time.Tick(15 * time.Second) {
 		h.processAllSubscriptions()
 	}
 }

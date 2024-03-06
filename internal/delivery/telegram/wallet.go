@@ -6,14 +6,15 @@ import (
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
 	"math"
+	"strconv"
 )
 
 func (h *Handler) NewWallet(ctx *Context) {
 	ctx.ResponseString("Please enter wallet name (ex. BTCUSDT, ETHUSDT)")
 
 	ctx.FSM.Update(ctx.UID, State{
-		Command: newWalletCommand,
-		Step:    "wallet input",
+		Caller: ctx.CallbackName,
+		Step:   "wallet input",
 	})
 }
 
@@ -43,12 +44,15 @@ func (h *Handler) Wallets(ctx *Context) {
 	}
 
 	if len(all) == 0 {
-		ctx.ResponseString("Sorry, you don't have any wallets yet, use /newWallet command")
+		ctx.ResponseString("Sorry, you don't have any wallets yet")
 		return
 	}
 
 	msg := tgbotapi.NewMessage(ctx.UID, "There is the list of your wallets")
-	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(getWalletCallbackKeyboard(all)...)
+	newBtn := tgbotapi.NewInlineKeyboardButtonData("New Wallet", walletNewCallback+"=")
+	btns := [][]tgbotapi.InlineKeyboardButton{{newBtn}}
+	btns = append(btns, getWalletCallbackKeyboard(all)...)
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(btns...)
 	ctx.Response(msg)
 }
 
@@ -64,7 +68,7 @@ func getWalletCallbackKeyboard(wallets []db.CryptoWallet) [][]tgbotapi.InlineKey
 	var col int
 
 	for _, w := range wallets {
-		cbData := fmt.Sprintf("%s=%s", walletCallback, w.Name)
+		cbData := fmt.Sprintf("%s=%d", walletCallback, w.ID)
 		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(w.Name, cbData))
 
 		if (col+1)%2 == 0 {
@@ -79,17 +83,26 @@ func getWalletCallbackKeyboard(wallets []db.CryptoWallet) [][]tgbotapi.InlineKey
 }
 
 func (h *Handler) Wallet(ctx *Context) {
-	walletName := h.resolveWalletName(ctx.CallbackDataValue)
+	walletID, err := strconv.ParseInt(ctx.CallbackDataValue, 10, 64)
+	if err != nil {
+		ctx.ResponseString("Invalid wallet id")
+		return
+	}
 
-	wallet, err := h.service.Wallet.Get(ctx.UID, walletName)
+	wallet, err := h.service.Wallet.Get(ctx.UID, walletID)
 	if err != nil {
 		ctx.ResponseString(h.walletError(err))
 		return
 	}
 
 	msg := tgbotapi.NewMessage(ctx.UID, h.walletSuccess(wallet))
-	btn := tgbotapi.NewInlineKeyboardButtonData("Transactions", "walletTransactions="+fmt.Sprintf("%d", wallet.Id))
-	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup([]tgbotapi.InlineKeyboardButton{btn})
+
+	buyBtn := tgbotapi.NewInlineKeyboardButtonData("Buy", "walletBuy="+fmt.Sprintf("%d", wallet.Id))
+	sellBtn := tgbotapi.NewInlineKeyboardButtonData("Sell", "walletSell="+fmt.Sprintf("%d", wallet.Id))
+	transactionsBtn := tgbotapi.NewInlineKeyboardButtonData("Transactions", "walletTransactions="+fmt.Sprintf("%d", wallet.Id))
+
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup([]tgbotapi.InlineKeyboardButton{transactionsBtn, buyBtn, sellBtn})
+
 	ctx.Response(msg)
 }
 

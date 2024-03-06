@@ -245,17 +245,17 @@ func (q *Queries) GetUserSubscriptions(ctx context.Context, userID int64) ([]Sub
 const getUserWallet = `-- name: GetUserWallet :one
 SELECT id, user_id, name, amount, created_at
 FROM crypto_wallets
-WHERE user_id = ? AND name = ?
+WHERE user_id = ? AND id = ?
 ORDER BY created_at DESC
 `
 
 type GetUserWalletParams struct {
 	UserID int64
-	Name   string
+	ID     int64
 }
 
 func (q *Queries) GetUserWallet(ctx context.Context, arg GetUserWalletParams) (CryptoWallet, error) {
-	row := q.db.QueryRowContext(ctx, getUserWallet, arg.UserID, arg.Name)
+	row := q.db.QueryRowContext(ctx, getUserWallet, arg.UserID, arg.ID)
 	var i CryptoWallet
 	err := row.Scan(
 		&i.ID,

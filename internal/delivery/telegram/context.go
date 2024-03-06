@@ -17,6 +17,7 @@ const (
 type Context struct {
 	UID               int64
 	CallbackDataValue string
+	CallbackName      string
 	Type              messageType
 	CommandType       string
 	FSM               *FSM

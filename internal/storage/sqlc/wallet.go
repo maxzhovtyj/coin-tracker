@@ -83,13 +83,13 @@ func (w *WalletStorage) CreateWalletRecord(walletID int64, amount, price float64
 	return tr, tx.Commit()
 }
 
-func (w *WalletStorage) Get(telegramID int64, wallet string) (db.CryptoWallet, error) {
+func (w *WalletStorage) Get(telegramID, walletID int64) (db.CryptoWallet, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
 	userWallet, err := w.q.GetUserWallet(ctx, db.GetUserWalletParams{
 		UserID: telegramID,
-		Name:   wallet,
+		ID:     walletID,
 	})
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

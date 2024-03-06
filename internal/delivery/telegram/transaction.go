@@ -2,63 +2,41 @@ package telegram
 
 import (
 	"fmt"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
-	db "github.com/maxzhovtyj/coin-tracker/pkg/db/sqlc"
-	"math"
 	"strconv"
 	"strings"
 	"time"
 )
 
 func (h *Handler) NewTransaction(ctx *Context) {
-	all, err := h.service.Wallet.All(ctx.UID)
+	walletID, err := strconv.ParseInt(ctx.CallbackDataValue, 10, 64)
 	if err != nil {
-		ctx.ResponseString(fmt.Sprintf("Sorry, cannot get your wallet, %v", err))
+		ctx.ResponseString("Invalid wallet id")
 		return
 	}
 
-	msg := tgbotapi.NewMessage(ctx.UID, "Please select wallet")
-	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(getKeyboardFromWallets(all)...)
-
-	_, err = ctx.ResponseWithError(msg)
+	wallet, err := h.service.Wallet.Get(ctx.UID, walletID)
 	if err != nil {
-		h.logger.Error(err)
+		ctx.ResponseString("Cant find wallet")
 		return
 	}
+
+	data := NewTransactionData{
+		Wallet: wallet,
+	}
+
+	ctx.ResponseString("Input coin amount")
 
 	ctx.FSM.Update(ctx.UID, State{
-		Command: Command(ctx.Command()),
-		Step:    selectWalletStep,
+		Caller: ctx.CallbackName,
+		Step:   inputAmountStep,
+		Data:   data,
 	})
 }
 
-func getKeyboardFromWallets(wallets []db.CryptoWallet) [][]tgbotapi.InlineKeyboardButton {
-	rows := math.Ceil(float64(len(wallets)) / float64(2))
-	keyboard := make([][]tgbotapi.InlineKeyboardButton, int(rows))
-
-	var row int
-	var col int
-
-	for _, w := range wallets {
-		cbData := fmt.Sprintf("%s=%s", newTransactionCallback, w.Name)
-		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(w.Name, cbData))
-
-		if (col+1)%2 == 0 {
-			col = 0
-			row++
-		} else {
-			col++
-		}
-	}
-
-	return keyboard
-}
-
 const (
-	selectWalletStep = "select wallet"
-	inputAmountStep  = "input amount"
-	inputPriceStep   = "input price"
+	inputAmountStep = "input amount"
+	inputPriceStep  = "input price"
 )
 
 type NewTransactionData struct {
@@ -71,31 +49,11 @@ func (h *Handler) ResolveNewTransactionSteps(ctx *Context) {
 	state := ctx.FSM.Get(ctx.UID)
 
 	switch state.Step {
-	case selectWalletStep:
-		h.selectWalletStep(ctx)
 	case inputAmountStep:
 		h.inputTransactionAmountStep(ctx)
 	case inputPriceStep:
 		h.inputTransactionPriceStep(ctx)
 	}
-}
-
-func (h *Handler) selectWalletStep(ctx *Context) {
-	wallet, err := h.service.Wallet.Get(ctx.UID, h.resolveWalletName(ctx.CallbackDataValue))
-	if err != nil {
-		ctx.ResponseString(fmt.Sprintf("Sorry, I can't find this wallet, %v", err))
-		return
-	}
-
-	ctx.ResponseString("Please enter amount (number)")
-
-	ctx.FSM.Update(ctx.UID, State{
-		Command: ctx.FSM.Get(ctx.UID).Command,
-		Step:    inputAmountStep,
-		Data: NewTransactionData{
-			Wallet: wallet,
-		},
-	})
 }
 
 func (h *Handler) inputTransactionAmountStep(ctx *Context) {
@@ -114,16 +72,17 @@ func (h *Handler) inputTransactionAmountStep(ctx *Context) {
 		return
 	}
 
-	if state.Command == sellCommand {
+	if state.Caller == walletSellCallback {
 		amount = -amount
 	}
 
 	ctx.ResponseString("Input coin price")
+
 	data.Amount = amount
 	ctx.FSM.Update(ctx.UID, State{
-		Command: state.Command,
-		Step:    inputPriceStep,
-		Data:    data,
+		Caller: state.Caller,
+		Step:   inputPriceStep,
+		Data:   data,
 	})
 }
 
@@ -163,6 +122,11 @@ func (h *Handler) WalletTransactions(ctx *Context) {
 	transactions, err := h.service.Wallet.GetTransactions(wid)
 	if err != nil {
 		ctx.ResponseString(h.walletError(err))
+		return
+	}
+
+	if len(transactions) == 0 {
+		ctx.ResponseString("No transactions yet")
 		return
 	}
 

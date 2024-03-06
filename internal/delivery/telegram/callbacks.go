@@ -7,7 +7,10 @@ import (
 const (
 	walletCallback             = "wallet"
 	newTransactionCallback     = "newTransaction"
+	walletNewCallback          = "walletNew"
 	walletTransactionsCallback = "walletTransactions"
+	walletBuyCallback          = "walletBuy"
+	walletSellCallback         = "walletSell"
 )
 
 func (h *Handler) Callbacks(ctx *Context) {
@@ -20,11 +23,16 @@ func (h *Handler) Callbacks(ctx *Context) {
 	}
 
 	cbName := cbData[:idx]
+	ctx.CallbackName = cbName
 	ctx.CallbackDataValue = cbData[idx+1:]
 
 	switch cbName {
 	case walletCallback:
 		h.Wallet(ctx)
+	case walletNewCallback:
+		h.NewWallet(ctx)
+	case walletBuyCallback, walletSellCallback:
+		h.NewTransaction(ctx)
 	case newTransactionCallback:
 		h.ResolveNewTransactionSteps(ctx)
 	case walletTransactionsCallback:

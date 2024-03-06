@@ -105,8 +105,8 @@ func (w *WalletService) Create(telegramID int64, walletName string) error {
 	return w.db.Create(telegramID, walletName)
 }
 
-func (w *WalletService) Get(telegramID int64, name string) (models.Wallet, error) {
-	storageWallet, err := w.db.Get(telegramID, name)
+func (w *WalletService) Get(telegramID, walletID int64) (models.Wallet, error) {
+	storageWallet, err := w.db.Get(telegramID, walletID)
 	if err != nil {
 		return models.Wallet{}, err
 	}

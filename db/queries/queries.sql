@@ -18,7 +18,7 @@ ORDER BY created_at DESC;
 -- name: GetUserWallet :one
 SELECT *
 FROM crypto_wallets
-WHERE user_id = ? AND name = ?
+WHERE user_id = ? AND id = ?
 ORDER BY created_at DESC;
 
 -- name: CreateUserWallet :one

@@ -14,9 +14,9 @@ func NewFSM() *FSM {
 }
 
 type State struct {
-	Command Command
-	Step    string
-	Data    any
+	Caller string
+	Step   string
+	Data   any
 }
 
 func (fsm *FSM) Get(id int64) State {

@@ -2,16 +2,16 @@ package telegram
 
 type Command string
 
+func (c Command) String() string {
+	return string(c)
+}
+
 const (
 	startCommand Command = "start"
 	// TODO add help command
 
-	// TODO combine newWallet with wallets
-	walletsCommand   Command = "wallets"
-	newWalletCommand Command = "newWallet"
+	walletsCommand Command = "wallets"
 
-	buyCommand      Command = "buy"
-	sellCommand     Command = "sell"
 	netWorthCommand Command = "netWorth"
 
 	// TODO combine subscribe and cancelSubscription into subscriptions
@@ -23,9 +23,6 @@ const (
 
 var usefulCommands = []Command{
 	walletsCommand,
-	newWalletCommand,
-	buyCommand,
-	sellCommand,
 	netWorthCommand,
 	subscribeCoinCommand,
 	cancelCoinSubscriptionCommand,
@@ -38,12 +35,6 @@ func (h *Handler) Commands(ctx *Context) {
 		h.CreateUser(ctx)
 	case walletsCommand:
 		h.Wallets(ctx)
-	case newWalletCommand:
-		h.NewWallet(ctx)
-	case buyCommand:
-		h.NewTransaction(ctx)
-	case sellCommand:
-		h.NewTransaction(ctx)
 	case netWorthCommand:
 		h.UserNetWorth(ctx)
 	case subscribeCoinCommand:

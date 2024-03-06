@@ -19,7 +19,7 @@ type User interface {
 }
 
 type Wallet interface {
-	Get(telegramID int64, wallet string) (models.Wallet, error)
+	Get(telegramID, wallet int64) (models.Wallet, error)
 	Create(telegramID int64, wallet string) error
 	All(telegramID int64) ([]db.CryptoWallet, error)
 	NewTransaction(wallet int64, amount, price float64) error
