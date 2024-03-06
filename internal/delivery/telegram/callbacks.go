@@ -12,6 +12,10 @@ const (
 	walletTransactionsCallback = "walletTransactions"
 	walletBuyCallback          = "walletBuy"
 	walletSellCallback         = "walletSell"
+
+	subscribeCoinCallback        = "subscribeCoin"
+	subscriptionDeleteCallback   = "subscriptionDelete"
+	subscriptionCoinInfoCallback = "subscriptionCoinInfo"
 )
 
 func (h *Handler) Callbacks(ctx *Context) {
@@ -40,6 +44,13 @@ func (h *Handler) Callbacks(ctx *Context) {
 		h.ResolveNewTransactionSteps(ctx)
 	case walletTransactionsCallback:
 		h.WalletTransactions(ctx)
+
+	case subscriptionCoinInfoCallback:
+		h.SubscriptionInfo(ctx)
+	case subscribeCoinCallback:
+		h.SubscribeCoin(ctx)
+	case subscriptionDeleteCallback:
+		h.DeleteSubscription(ctx)
 	}
 
 }

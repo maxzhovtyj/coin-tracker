@@ -25,6 +25,27 @@ func NewSubscriptionService(db storage.Subscription, api binance.API) *Subscript
 	}
 }
 
+func (s *SubscriptionService) Get(id int64) (models.Subscription, error) {
+	subRaw, err := s.db.Get(id)
+	if err != nil {
+		return models.Subscription{}, err
+	}
+
+	d, err := time.ParseDuration(subRaw.NotifyInterval)
+	if err != nil {
+		return models.Subscription{}, err
+	}
+
+	return models.Subscription{
+		ID:             subRaw.ID,
+		Type:           subRaw.Type,
+		ChatID:         subRaw.UserID,
+		Data:           subRaw.Data,
+		NotifyInterval: d,
+		LastNotifiedAt: subRaw.LastNotifiedAt.Time,
+	}, nil
+}
+
 func (s *SubscriptionService) UserSubscriptions(uid int64) ([]models.Subscription, error) {
 	subscriptions, err := s.db.UserSubscriptions(uid)
 	if err != nil {
@@ -109,4 +130,8 @@ func (s *SubscriptionService) NewCoinSubscription(uid int64, coinName string, in
 	}
 
 	return nil
+}
+
+func (s *SubscriptionService) Delete(id int64) error {
+	return s.db.Delete(id)
 }

@@ -34,6 +34,8 @@ type Subscription interface {
 	NewCoinSubscription(uid int64, coinName string, interval time.Duration) error
 	Notified(id int64) error
 	CoinTicker(coin, windowSize string) (binance.SymbolTicker, error)
+	Delete(id int64) error
+	Get(id int64) (models.Subscription, error)
 }
 
 func New(storage *storage.Storage, api binance.API) *Service {

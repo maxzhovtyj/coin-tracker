@@ -12,20 +12,15 @@ const (
 	startCommand Command = "start"
 	// TODO add help command
 
-	walletsCommand  Command = "wallets"
-	netWorthCommand Command = "netWorth"
-
-	// TODO combine subscribe and cancelSubscription into subscriptions
-	subscriptionsCommand          Command = "subscriptions"
-	subscribeCoinCommand          Command = "subscribeCoin"
-	cancelCoinSubscriptionCommand Command = "cancelSubscription"
-
-	cancelCommand Command = "cancel"
+	walletsCommand       Command = "wallets"
+	netWorthCommand      Command = "netWorth"
+	subscriptionsCommand Command = "subscriptions"
+	cancelCommand        Command = "cancel"
 )
 
 var keyboardMarkup = [][]tgbotapi.KeyboardButton{
 	{tgbotapi.NewKeyboardButton("/" + walletsCommand.String()), tgbotapi.NewKeyboardButton("/" + netWorthCommand.String())},
-	{tgbotapi.NewKeyboardButton("/" + subscribeCoinCommand.String()), tgbotapi.NewKeyboardButton("/" + cancelCoinSubscriptionCommand.String())},
+	{tgbotapi.NewKeyboardButton("/" + subscriptionsCommand.String())},
 	{tgbotapi.NewKeyboardButton("/" + cancelCommand.String())},
 }
 
@@ -37,10 +32,8 @@ func (h *Handler) Commands(ctx *Context) {
 		h.Wallets(ctx)
 	case netWorthCommand:
 		h.UserNetWorth(ctx)
-	case subscribeCoinCommand:
-		h.SubscribeCoin(ctx)
-	case cancelCoinSubscriptionCommand:
-		h.CancelCoinSubscription(ctx)
+	case subscriptionsCommand:
+		h.Subscriptions(ctx)
 	case cancelCommand:
 		h.Cancel(ctx)
 	default:

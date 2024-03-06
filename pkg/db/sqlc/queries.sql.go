@@ -10,7 +10,9 @@ import (
 )
 
 const createSubscription = `-- name: CreateSubscription :one
-INSERT INTO subscriptions (type, user_id, data, notify_interval) VALUES (?, ?, ?, ?) RETURNING id, type, user_id, data, notify_interval, last_notified_at
+INSERT INTO subscriptions (type, user_id, data, notify_interval)
+VALUES (?, ?, ?, ?)
+RETURNING id, type, user_id, data, notify_interval, last_notified_at
 `
 
 type CreateSubscriptionParams struct {
@@ -40,7 +42,9 @@ func (q *Queries) CreateSubscription(ctx context.Context, arg CreateSubscription
 }
 
 const createTransaction = `-- name: CreateTransaction :one
-INSERT INTO transactions (wallet_id, amount, price) VALUES (?, ?, ?) RETURNING id, wallet_id, amount, price, created_at
+INSERT INTO transactions (wallet_id, amount, price)
+VALUES (?, ?, ?)
+RETURNING id, wallet_id, amount, price, created_at
 `
 
 type CreateTransactionParams struct {
@@ -99,10 +103,22 @@ func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletPara
 	return i, err
 }
 
+const deleteSubscription = `-- name: DeleteSubscription :exec
+DELETE
+FROM subscriptions
+WHERE id = ?
+`
+
+func (q *Queries) DeleteSubscription(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteSubscription, id)
+	return err
+}
+
 const deleteUserWallet = `-- name: DeleteUserWallet :exec
 DELETE
 FROM crypto_wallets
-WHERE user_id = ? AND id = ?
+WHERE user_id = ?
+  AND id = ?
 `
 
 type DeleteUserWalletParams struct {
@@ -113,6 +129,26 @@ type DeleteUserWalletParams struct {
 func (q *Queries) DeleteUserWallet(ctx context.Context, arg DeleteUserWalletParams) error {
 	_, err := q.db.ExecContext(ctx, deleteUserWallet, arg.UserID, arg.ID)
 	return err
+}
+
+const getSubscription = `-- name: GetSubscription :one
+SELECT id, type, user_id, data, notify_interval, last_notified_at
+FROM subscriptions
+WHERE id = ?
+`
+
+func (q *Queries) GetSubscription(ctx context.Context, id int64) (Subscription, error) {
+	row := q.db.QueryRowContext(ctx, getSubscription, id)
+	var i Subscription
+	err := row.Scan(
+		&i.ID,
+		&i.Type,
+		&i.UserID,
+		&i.Data,
+		&i.NotifyInterval,
+		&i.LastNotifiedAt,
+	)
+	return i, err
 }
 
 const getSubscriptions = `-- name: GetSubscriptions :many
@@ -151,7 +187,10 @@ func (q *Queries) GetSubscriptions(ctx context.Context) ([]Subscription, error) 
 }
 
 const getTransactions = `-- name: GetTransactions :many
-SELECT id, wallet_id, amount, price, created_at FROM transactions WHERE wallet_id = ? ORDER BY created_at DESC
+SELECT id, wallet_id, amount, price, created_at
+FROM transactions
+WHERE wallet_id = ?
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetTransactions(ctx context.Context, walletID int64) ([]Transaction, error) {
@@ -200,7 +239,8 @@ func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
 const getUserSubscription = `-- name: GetUserSubscription :one
 SELECT id, type, user_id, data, notify_interval, last_notified_at
 FROM subscriptions
-WHERE user_id = ? AND type = ?
+WHERE user_id = ?
+  AND type = ?
 `
 
 type GetUserSubscriptionParams struct {
@@ -261,7 +301,8 @@ func (q *Queries) GetUserSubscriptions(ctx context.Context, userID int64) ([]Sub
 const getUserWallet = `-- name: GetUserWallet :one
 SELECT id, user_id, name, amount, created_at
 FROM crypto_wallets
-WHERE user_id = ? AND id = ?
+WHERE user_id = ?
+  AND id = ?
 ORDER BY created_at DESC
 `
 
@@ -320,7 +361,10 @@ func (q *Queries) GetUserWallets(ctx context.Context, userID int64) ([]CryptoWal
 }
 
 const updateLastNotifiedAt = `-- name: UpdateLastNotifiedAt :one
-UPDATE subscriptions SET last_notified_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING id, type, user_id, data, notify_interval, last_notified_at
+UPDATE subscriptions
+SET last_notified_at = CURRENT_TIMESTAMP
+WHERE id = ?
+RETURNING id, type, user_id, data, notify_interval, last_notified_at
 `
 
 func (q *Queries) UpdateLastNotifiedAt(ctx context.Context, id int64) (Subscription, error) {
@@ -338,7 +382,10 @@ func (q *Queries) UpdateLastNotifiedAt(ctx context.Context, id int64) (Subscript
 }
 
 const updateWalletBalance = `-- name: UpdateWalletBalance :one
-UPDATE crypto_wallets SET amount = amount + ?  WHERE id = ? RETURNING id, user_id, name, amount, created_at
+UPDATE crypto_wallets
+SET amount = amount + ?
+WHERE id = ?
+RETURNING id, user_id, name, amount, created_at
 `
 
 type UpdateWalletBalanceParams struct {

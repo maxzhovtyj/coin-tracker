@@ -10,7 +10,7 @@ func (h *Handler) Messages(ctx *Context) {
 		h.ResolveNewTransactionSteps(ctx)
 	case walletDeleteCallback:
 		h.ResolveDeleteWalletStep(ctx)
-	case subscribeCoinCommand.String():
+	case subscribeCoinCallback:
 		h.ResolveSubscribeCoinSteps(ctx)
 	}
 }

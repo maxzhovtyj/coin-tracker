@@ -18,13 +18,15 @@ ORDER BY created_at DESC;
 -- name: GetUserWallet :one
 SELECT *
 FROM crypto_wallets
-WHERE user_id = ? AND id = ?
+WHERE user_id = ?
+  AND id = ?
 ORDER BY created_at DESC;
 
 -- name: DeleteUserWallet :exec
 DELETE
 FROM crypto_wallets
-WHERE user_id = ? AND id = ?;
+WHERE user_id = ?
+  AND id = ?;
 
 -- name: CreateUserWallet :one
 INSERT INTO crypto_wallets (user_id, name)
@@ -32,13 +34,21 @@ VALUES (?, ?)
 RETURNING *;
 
 -- name: CreateTransaction :one
-INSERT INTO transactions (wallet_id, amount, price) VALUES (?, ?, ?) RETURNING *;
+INSERT INTO transactions (wallet_id, amount, price)
+VALUES (?, ?, ?)
+RETURNING *;
 
 -- name: GetTransactions :many
-SELECT * FROM transactions WHERE wallet_id = ? ORDER BY created_at DESC;
+SELECT *
+FROM transactions
+WHERE wallet_id = ?
+ORDER BY created_at DESC;
 
 -- name: UpdateWalletBalance :one
-UPDATE crypto_wallets SET amount = amount + ?  WHERE id = ? RETURNING *;
+UPDATE crypto_wallets
+SET amount = amount + ?
+WHERE id = ?
+RETURNING *;
 
 -- name: GetSubscriptions :many
 SELECT *
@@ -49,13 +59,29 @@ SELECT *
 FROM subscriptions
 WHERE user_id = ?;
 
+-- name: DeleteSubscription :exec
+DELETE
+FROM subscriptions
+WHERE id = ?;
+
+-- name: GetSubscription :one
+SELECT *
+FROM subscriptions
+WHERE id = ?;
+
 -- name: GetUserSubscription :one
 SELECT *
 FROM subscriptions
-WHERE user_id = ? AND type = ?;
+WHERE user_id = ?
+  AND type = ?;
 
 -- name: CreateSubscription :one
-INSERT INTO subscriptions (type, user_id, data, notify_interval) VALUES (?, ?, ?, ?) RETURNING *;
+INSERT INTO subscriptions (type, user_id, data, notify_interval)
+VALUES (?, ?, ?, ?)
+RETURNING *;
 
 -- name: UpdateLastNotifiedAt :one
-UPDATE subscriptions SET last_notified_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *;
+UPDATE subscriptions
+SET last_notified_at = CURRENT_TIMESTAMP
+WHERE id = ?
+RETURNING *;

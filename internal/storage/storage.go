@@ -29,6 +29,8 @@ type Subscription interface {
 	UserSubscriptions(uid int64) ([]db.Subscription, error)
 	Create(uid int64, subscriptionType, data, interval string) (db.Subscription, error)
 	UpdateLastNotifiedAt(id int64) error
+	Delete(id int64) error
+	Get(id int64) (db.Subscription, error)
 }
 
 func New(conn db.DBTX) *Storage {

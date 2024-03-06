@@ -57,9 +57,23 @@ func (s *SubscriptionStorage) Create(uid int64, subscriptionType, data, interval
 	return subscription, nil
 }
 
+func (s *SubscriptionStorage) Get(id int64) (db.Subscription, error) {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelFunc()
+
+	return s.q.GetSubscription(ctx, id)
+}
+
 func (s *SubscriptionStorage) UserSubscriptions(uid int64) ([]db.Subscription, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
 
 	return s.q.GetUserSubscriptions(ctx, uid)
+}
+
+func (s *SubscriptionStorage) Delete(id int64) error {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelFunc()
+
+	return s.q.DeleteSubscription(ctx, id)
 }
