@@ -180,8 +180,16 @@ func (h *Handler) subscriptionsInlineKeyboard(subs []models.Subscription) [][]tg
 	var col int
 
 	for _, t := range subs {
-		cbData := fmt.Sprintf("%s=%s", "cancelSubscription", t.Type)
-		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(t.Type, cbData))
+		var d models.CoinSubscriptionData
+
+		err := json.Unmarshal([]byte(t.Data), &d)
+		if err != nil {
+			h.logger.Error(err)
+			continue
+		}
+
+		cbData := fmt.Sprintf("%s=%d", "cancelSubscription", t.ID)
+		keyboard[row] = append(keyboard[row], tgbotapi.NewInlineKeyboardButtonData(d.CoinName, cbData))
 
 		if (col+1)%2 == 0 {
 			col = 0

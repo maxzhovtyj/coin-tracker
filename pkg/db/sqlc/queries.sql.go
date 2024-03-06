@@ -99,6 +99,22 @@ func (q *Queries) CreateUserWallet(ctx context.Context, arg CreateUserWalletPara
 	return i, err
 }
 
+const deleteUserWallet = `-- name: DeleteUserWallet :exec
+DELETE
+FROM crypto_wallets
+WHERE user_id = ? AND id = ?
+`
+
+type DeleteUserWalletParams struct {
+	UserID int64
+	ID     int64
+}
+
+func (q *Queries) DeleteUserWallet(ctx context.Context, arg DeleteUserWalletParams) error {
+	_, err := q.db.ExecContext(ctx, deleteUserWallet, arg.UserID, arg.ID)
+	return err
+}
+
 const getSubscriptions = `-- name: GetSubscriptions :many
 SELECT id, type, user_id, data, notify_interval, last_notified_at
 FROM subscriptions

@@ -19,6 +19,10 @@ func NewWalletService(db storage.Wallet, api binance.API) *WalletService {
 	}
 }
 
+func (w *WalletService) Delete(userID, walletID int64) error {
+	return w.db.Delete(userID, walletID)
+}
+
 func (w *WalletService) GetTransactions(wallet int64) ([]models.Transaction, error) {
 	raw, err := w.db.GetTransactions(wallet)
 	if err != nil {

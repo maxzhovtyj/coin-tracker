@@ -28,6 +28,53 @@ func (h *Handler) ResolveNewWalletSteps(ctx *Context) {
 	ctx.ResponseString(h.newWalletSuccess())
 }
 
+func (h *Handler) DeleteWallet(ctx *Context) {
+	walletID, err := strconv.ParseInt(ctx.CallbackDataValue, 10, 64)
+	if err != nil {
+		ctx.ResponseString("Invalid wallet id")
+		return
+	}
+
+	ctx.ResponseString("You are going to delete and all it's transactions, in order to do this enter full wallet name (ex. BTCUSDT, ETHUSDT)")
+
+	ctx.FSM.Update(ctx.UID, State{
+		Caller: ctx.CallbackName,
+		Data:   walletID,
+		Step:   "wallet delete",
+	})
+}
+
+func (h *Handler) ResolveDeleteWalletStep(ctx *Context) {
+	state := ctx.FSM.Get(ctx.UID)
+	defer ctx.FSM.Remove(ctx.UID)
+
+	walletID, ok := state.Data.(int64)
+	if !ok {
+		ctx.ResponseString("Invalid wallet id")
+		return
+	}
+
+	walletName := ctx.Update.Message.Text
+	wallet, err := h.service.Wallet.Get(ctx.UID, walletID)
+	if err != nil {
+		ctx.ResponseString("Can't get your wallet, " + err.Error())
+		return
+	}
+
+	if wallet.Name != walletName {
+		ctx.ResponseString("Wallet name mismatch, try again")
+		return
+	}
+
+	err = h.service.Wallet.Delete(ctx.UID, walletID)
+	if err != nil {
+		ctx.ResponseString("Can't delete your wallet, " + err.Error())
+		return
+	}
+
+	ctx.ResponseString("Your wallet successfully deleted")
+}
+
 func (h *Handler) newWalletError(err error) string {
 	return fmt.Sprintf("Sorry, I can't create new wallet, reason: %v", err)
 }
@@ -100,8 +147,14 @@ func (h *Handler) Wallet(ctx *Context) {
 	buyBtn := tgbotapi.NewInlineKeyboardButtonData("Buy", "walletBuy="+fmt.Sprintf("%d", wallet.Id))
 	sellBtn := tgbotapi.NewInlineKeyboardButtonData("Sell", "walletSell="+fmt.Sprintf("%d", wallet.Id))
 	transactionsBtn := tgbotapi.NewInlineKeyboardButtonData("Transactions", "walletTransactions="+fmt.Sprintf("%d", wallet.Id))
+	deleteBtn := tgbotapi.NewInlineKeyboardButtonData("Delete", "walletDelete="+fmt.Sprintf("%d", wallet.Id))
 
-	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup([]tgbotapi.InlineKeyboardButton{transactionsBtn, buyBtn, sellBtn})
+	markup := [][]tgbotapi.InlineKeyboardButton{
+		{transactionsBtn},
+		{buyBtn, sellBtn},
+		{deleteBtn},
+	}
+	msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(markup...)
 
 	ctx.Response(msg)
 }

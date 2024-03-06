@@ -21,6 +21,11 @@ FROM crypto_wallets
 WHERE user_id = ? AND id = ?
 ORDER BY created_at DESC;
 
+-- name: DeleteUserWallet :exec
+DELETE
+FROM crypto_wallets
+WHERE user_id = ? AND id = ?;
+
 -- name: CreateUserWallet :one
 INSERT INTO crypto_wallets (user_id, name)
 VALUES (?, ?)

@@ -8,6 +8,7 @@ const (
 	walletCallback             = "wallet"
 	newTransactionCallback     = "newTransaction"
 	walletNewCallback          = "walletNew"
+	walletDeleteCallback       = "walletDelete"
 	walletTransactionsCallback = "walletTransactions"
 	walletBuyCallback          = "walletBuy"
 	walletSellCallback         = "walletSell"
@@ -31,6 +32,8 @@ func (h *Handler) Callbacks(ctx *Context) {
 		h.Wallet(ctx)
 	case walletNewCallback:
 		h.NewWallet(ctx)
+	case walletDeleteCallback:
+		h.DeleteWallet(ctx)
 	case walletBuyCallback, walletSellCallback:
 		h.NewTransaction(ctx)
 	case newTransactionCallback:

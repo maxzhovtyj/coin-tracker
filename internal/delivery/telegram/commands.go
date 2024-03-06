@@ -1,5 +1,7 @@
 package telegram
 
+import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
 type Command string
 
 func (c Command) String() string {
@@ -10,23 +12,21 @@ const (
 	startCommand Command = "start"
 	// TODO add help command
 
-	walletsCommand Command = "wallets"
-
+	walletsCommand  Command = "wallets"
 	netWorthCommand Command = "netWorth"
 
 	// TODO combine subscribe and cancelSubscription into subscriptions
+	subscriptionsCommand          Command = "subscriptions"
 	subscribeCoinCommand          Command = "subscribeCoin"
 	cancelCoinSubscriptionCommand Command = "cancelSubscription"
 
 	cancelCommand Command = "cancel"
 )
 
-var usefulCommands = []Command{
-	walletsCommand,
-	netWorthCommand,
-	subscribeCoinCommand,
-	cancelCoinSubscriptionCommand,
-	cancelCommand,
+var keyboardMarkup = [][]tgbotapi.KeyboardButton{
+	{tgbotapi.NewKeyboardButton("/" + walletsCommand.String()), tgbotapi.NewKeyboardButton("/" + netWorthCommand.String())},
+	{tgbotapi.NewKeyboardButton("/" + subscribeCoinCommand.String()), tgbotapi.NewKeyboardButton("/" + cancelCoinSubscriptionCommand.String())},
+	{tgbotapi.NewKeyboardButton("/" + cancelCommand.String())},
 }
 
 func (h *Handler) Commands(ctx *Context) {

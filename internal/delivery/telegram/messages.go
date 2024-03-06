@@ -8,6 +8,8 @@ func (h *Handler) Messages(ctx *Context) {
 		h.ResolveNewWalletSteps(ctx)
 	case walletBuyCallback, walletSellCallback:
 		h.ResolveNewTransactionSteps(ctx)
+	case walletDeleteCallback:
+		h.ResolveDeleteWalletStep(ctx)
 	case subscribeCoinCommand.String():
 		h.ResolveSubscribeCoinSteps(ctx)
 	}

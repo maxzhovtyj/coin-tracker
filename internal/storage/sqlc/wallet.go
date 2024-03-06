@@ -34,6 +34,16 @@ func NewWalletStorage(conn db.DBTX) *WalletStorage {
 	}
 }
 
+func (w *WalletStorage) Delete(userID, walletID int64) error {
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancelFunc()
+
+	return w.q.DeleteUserWallet(ctx, db.DeleteUserWalletParams{
+		UserID: userID,
+		ID:     walletID,
+	})
+}
+
 func (w *WalletStorage) CreateTransaction(withTx *db.Queries, walletID int64, amount, price float64) (db.Transaction, error) {
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelFunc()
