@@ -19,7 +19,7 @@ func (h *Handler) NewWallet(ctx *Context) {
 }
 
 func (h *Handler) ResolveNewWalletSteps(ctx *Context) {
-	err := h.service.Wallet.Create(ctx.UID, ctx.Update.Message.Text)
+	err := h.service.Wallet.Create(ctx.UID, h.resolveWalletName(ctx.Update.Message.Text))
 	if err != nil {
 		ctx.ResponseString(h.newWalletError(err))
 		return
