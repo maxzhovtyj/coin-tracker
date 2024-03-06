@@ -79,7 +79,7 @@ func (h *Handler) subscribeCoinIntervalInputStep(ctx *Context) {
 }
 
 func (h *Handler) Subscriptions() {
-	for range time.Tick(15 * time.Second) {
+	for range time.Tick(5 * time.Minute) {
 		h.processAllSubscriptions()
 	}
 }
