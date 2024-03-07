@@ -144,10 +144,10 @@ func (h *Handler) Wallet(ctx *Context) {
 
 	msg := tgbotapi.NewMessage(ctx.UID, h.walletSuccess(wallet))
 
-	buyBtn := tgbotapi.NewInlineKeyboardButtonData("Buy", "walletBuy="+fmt.Sprintf("%d", wallet.Id))
-	sellBtn := tgbotapi.NewInlineKeyboardButtonData("Sell", "walletSell="+fmt.Sprintf("%d", wallet.Id))
-	transactionsBtn := tgbotapi.NewInlineKeyboardButtonData("Transactions", "walletTransactions="+fmt.Sprintf("%d", wallet.Id))
-	deleteBtn := tgbotapi.NewInlineKeyboardButtonData("Delete", "walletDelete="+fmt.Sprintf("%d", wallet.Id))
+	buyBtn := tgbotapi.NewInlineKeyboardButtonData("Buy", fmt.Sprintf("%s=%d", walletBuyCallback, walletID))
+	sellBtn := tgbotapi.NewInlineKeyboardButtonData("Sell", fmt.Sprintf("%s=%d", walletSellCallback, walletID))
+	transactionsBtn := tgbotapi.NewInlineKeyboardButtonData("Transactions", fmt.Sprintf("%s=%d", walletTransactionsCallback, walletID))
+	deleteBtn := tgbotapi.NewInlineKeyboardButtonData("Delete", fmt.Sprintf("%s=%d", walletDeleteCallback, walletID))
 
 	markup := [][]tgbotapi.InlineKeyboardButton{
 		{transactionsBtn},
