@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
 	"github.com/maxzhovtyj/coin-tracker/internal/storage"
 	"github.com/maxzhovtyj/coin-tracker/pkg/binance"
@@ -23,24 +24,51 @@ func (w *WalletService) Delete(userID, walletID int64) error {
 	return w.db.Delete(userID, walletID)
 }
 
-func (w *WalletService) GetTransactions(wallet int64) ([]models.Transaction, error) {
-	raw, err := w.db.GetTransactions(wallet)
+const (
+	WalletBoughtTransaction = "Bought"
+	WalletSoldTransaction   = "Sold"
+)
+
+func (w *WalletService) GetTransactions(walletID int64) ([]models.Transaction, error) {
+	raw, err := w.db.GetTransactions(walletID)
 	if err != nil {
 		return nil, err
 	}
 
 	transactions := make([]models.Transaction, len(raw))
 	for i, tr := range raw {
+		t := WalletBoughtTransaction
+
+		if tr.Amount < 0 {
+			t = WalletSoldTransaction
+		}
+
 		transactions[i] = models.Transaction{
 			ID:        tr.ID,
 			WalletID:  tr.WalletID,
+			Type:      t,
 			Amount:    tr.Amount,
 			Price:     tr.Price,
+			Total:     tr.Amount * tr.Price,
 			CreatedAt: tr.CreatedAt,
 		}
 	}
 
 	return transactions, nil
+}
+
+func (w *WalletService) GetProfit(trs []models.Transaction) (spent, earned, profit float64, err error) {
+	for _, tr := range trs {
+		if tr.Type == WalletBoughtTransaction {
+			spent += tr.Total
+		} else if tr.Type == WalletSoldTransaction {
+			earned += tr.Total
+		} else {
+			return 0, 0, 0, fmt.Errorf("invalid transaction type")
+		}
+	}
+
+	return spent, earned, earned - spent, nil
 }
 
 func (w *WalletService) NewTransaction(wallet int64, amount, price float64) error {

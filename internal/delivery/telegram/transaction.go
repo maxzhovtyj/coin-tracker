@@ -3,6 +3,8 @@ package telegram
 import (
 	"fmt"
 	"github.com/maxzhovtyj/coin-tracker/internal/models"
+	"github.com/maxzhovtyj/coin-tracker/internal/service"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -119,6 +121,12 @@ func (h *Handler) WalletTransactions(ctx *Context) {
 		return
 	}
 
+	wallet, err := h.service.Wallet.Get(ctx.UID, wid)
+	if err != nil {
+		ctx.ResponseString("Can't find wallet, " + err.Error())
+		return
+	}
+
 	transactions, err := h.service.Wallet.GetTransactions(wid)
 	if err != nil {
 		ctx.ResponseString(h.walletError(err))
@@ -130,30 +138,35 @@ func (h *Handler) WalletTransactions(ctx *Context) {
 		return
 	}
 
-	ctx.ResponseString(h.formatTransactions(transactions))
+	spent, earned, profit, err := h.service.Wallet.GetProfit(transactions)
+	if err != nil {
+		ctx.ResponseString(err.Error())
+		return
+	}
+
+	ctx.ResponseString(h.formatTransactions(wallet, transactions, spent, earned, profit))
 }
 
-func (h *Handler) formatTransactions(trs []models.Transaction) string {
+func (h *Handler) formatTransactions(wallet models.Wallet, trs []models.Transaction, spent, earned, profit float64) string {
 	var b strings.Builder
 
+	b.WriteString(fmt.Sprintf(`
+Total spent: %f $
+Total earned: %f $
+Fixed Profit: %f $
+Current Profit: %f $
+`, spent, earned, profit, wallet.Balance-math.Abs(profit)))
+
 	for _, tr := range trs {
-		var t string
-
-		if tr.Amount >= 0 {
-			t = "Bought"
-		} else {
-			t = "Sold"
-		}
-
 		s := fmt.Sprintf(`
 %s %s:
 	Amount: %f
 	Price: %f
-`, tr.CreatedAt.Format(time.DateTime), t, tr.Amount, tr.Price)
+`, tr.CreatedAt.Format(time.DateTime), tr.Type, tr.Amount, tr.Price)
 
-		if t == "Bought" {
+		if tr.Type == service.WalletBoughtTransaction {
 			s += fmt.Sprintf("\tSpend: %f\n", tr.Amount*tr.Price)
-		} else if t == "Sold" {
+		} else if tr.Type == service.WalletSoldTransaction {
 			s += fmt.Sprintf("\tEarned: %f\n", -tr.Amount*tr.Price)
 		}
 

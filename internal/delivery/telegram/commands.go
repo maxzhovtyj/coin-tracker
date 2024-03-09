@@ -9,9 +9,7 @@ func (c Command) String() string {
 }
 
 const (
-	startCommand Command = "start"
-	// TODO add help command
-
+	startCommand         Command = "start"
 	walletsCommand       Command = "wallets"
 	netWorthCommand      Command = "netWorth"
 	subscriptionsCommand Command = "subscriptions"
